@@ -1,7 +1,6 @@
 package exceptions
 
 import (
-	"errors"
 	"fmt"
 )
 
@@ -17,12 +16,6 @@ func (e *TransactionNotFoundError) Error() string {
 func TransactionNotFound(transactionID string) error {
 	return &TransactionNotFoundError{TransactionID: transactionID}
 }
-
-// ErrInvalidInput is returned when the input provided is invalid.
-var ErrInvalidInput = errors.New("invalid input provided")
-
-// ErrUnauthorized is returned when the user is not authorized to perform an action.
-var ErrUnauthorized = errors.New("unauthorized access")
 
 // UserForbiddenError  is returned when the user is forbidden from accessing a resource.
 type UserForbiddenError struct {

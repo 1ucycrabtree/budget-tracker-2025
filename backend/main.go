@@ -20,7 +20,7 @@ func main() {
 
 	cfg := config.LoadConfig()
 
-	firestoreClient, err := db.NewFirestoreClient(ctx, cfg.FirestoreProjectID, cfg.FirestoreCredentialsPath, cfg.Environment)
+	firestoreClient, err := db.NewFirestoreClient(ctx, cfg.ProjectID, cfg.LocalCredentialsPath, cfg.Environment)
 	if err != nil {
 		log.Fatalf("Failed to create Firestore client: %v", err)
 	}

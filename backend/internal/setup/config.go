@@ -11,6 +11,7 @@ type AppConfig struct {
 	FirestoreProjectID       string
 	FirestoreCredentialsPath string
 	CorsAllowedOrigins       []string
+	Environment              string
 }
 
 func LoadConfig() *AppConfig {
@@ -23,6 +24,7 @@ func LoadConfig() *AppConfig {
 		FirestoreProjectID:       getEnv("FIRESTORE_PROJECT_ID", ""),
 		FirestoreCredentialsPath: getEnv("FIRESTORE_CREDENTIAL_PATH", ""),
 		CorsAllowedOrigins:       parseCSVEnv("CORS_ALLOWED_ORIGINS", "http://localhost:3000"),
+		Environment:              getEnv("ENVIRONMENT", "development"),
 	}
 
 	if cfg.FirestoreProjectID == "" {

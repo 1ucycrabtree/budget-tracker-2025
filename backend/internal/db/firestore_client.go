@@ -6,15 +6,21 @@ import (
 	firebase "firebase.google.com/go/v4"
 	"fmt"
 	"google.golang.org/api/option"
+	"log"
 )
 
-func NewFirestoreClient(ctx context.Context, credentialsPath string) (*firestore.Client, error) {
+func NewFirestoreClient(ctx context.Context, projectID, credentialsPath, env string) (*firestore.Client, error) {
 	var opts []option.ClientOption
-	if credentialsPath != "" {
-		opts = append(opts, option.WithCredentialsFile(credentialsPath))
-	}
 
-	app, err := firebase.NewApp(ctx, nil, opts...)
+	if env == "development" && credentialsPath != "" {
+		opts = append(opts, option.WithCredentialsFile(credentialsPath))
+	} else {
+		opts = append(opts, option.WithoutAuthentication())
+	}
+	log.Printf("Running in %s environment", env)
+
+	conf := &firebase.Config{ProjectID: projectID}
+	app, err := firebase.NewApp(ctx, conf, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("firebase.NewApp: %w", err)
 	}

@@ -12,7 +12,7 @@ on:
 
     paths:
       - 'backend/**'
-      - '.github/workflows/deploy.yaml'
+      - '.github/workflows/deploy-backend.yaml'
 
 env:
   GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}

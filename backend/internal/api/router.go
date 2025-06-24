@@ -1,12 +1,12 @@
 package api
 
 import (
-	"net/http"
-
-	"backend/internal/db"
-	config "backend/internal/setup"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
+	"net/http"
+
+	"github.com/1ucycrabtree/budget-tracker-2025/backend/internal/db"
+	config "github.com/1ucycrabtree/budget-tracker-2025/backend/internal/setup"
 )
 
 type RouterDeps struct {

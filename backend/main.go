@@ -10,9 +10,9 @@ import (
 	"os/signal"
 	"time"
 
-	"backend/internal/api"
-	"backend/internal/db"
-	config "backend/internal/setup"
+	"github.com/1ucycrabtree/budget-tracker-2025/backend/internal/api"
+	"github.com/1ucycrabtree/budget-tracker-2025/backend/internal/db"
+	config "github.com/1ucycrabtree/budget-tracker-2025/backend/internal/setup"
 )
 
 func main() {

@@ -1,7 +1,6 @@
 package api
 
 import (
-	"backend/internal/exceptions"
 	"context"
 	"encoding/json"
 	"errors"
@@ -11,7 +10,8 @@ import (
 	"net/http"
 	"time"
 
-	"backend/internal/models"
+	"github.com/1ucycrabtree/budget-tracker-2025/backend/internal/exceptions"
+	"github.com/1ucycrabtree/budget-tracker-2025/backend/internal/models"
 )
 
 func (deps *RouterDeps) CreateTransactionHandler(w http.ResponseWriter, r *http.Request) {

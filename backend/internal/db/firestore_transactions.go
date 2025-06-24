@@ -1,12 +1,12 @@
 package db
 
 import (
-	"backend/internal/exceptions"
-	"backend/internal/models"
 	"cloud.google.com/go/firestore"
 	"context"
 	"errors"
 	"fmt"
+	"github.com/1ucycrabtree/budget-tracker-2025/backend/internal/exceptions"
+	"github.com/1ucycrabtree/budget-tracker-2025/backend/internal/models"
 	"google.golang.org/api/iterator"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

@@ -1,9 +1,7 @@
 package main
 
 import (
-	"backend/internal/api"
-	"backend/internal/db"
-	config "backend/internal/setup"
+	"cloud.google.com/go/firestore"
 	"context"
 	"errors"
 	"log"
@@ -11,30 +9,44 @@ import (
 	"os"
 	"os/signal"
 	"time"
+
+	"backend/internal/api"
+	"backend/internal/db"
+	config "backend/internal/setup"
 )
 
 func main() {
+	ctx := context.Background()
+
 	cfg := config.LoadConfig()
 
-	ctx := context.Background()
 	firestoreClient, err := db.NewFirestoreClient(ctx, cfg.FirestoreCredentialsPath)
 	if err != nil {
-		log.Fatalf("Failed to initialize Firestore client: %v", err)
+		log.Fatalf("Failed to create Firestore client: %v", err)
 	}
-	defer func() {
-		if err := firestoreClient.Close(); err != nil {
-			log.Printf("Error closing Firestore client: %v", err)
-		}
-		log.Println("Firestore client closed.")
-	}()
-	log.Println("Firestore client initialized successfully!")
-
 	repo := db.NewFirestoreRepository(firestoreClient)
 
 	router := api.NewRouter(repo, cfg)
+	if router == nil {
+		log.Fatal("Failed to create router")
+	}
+
+	defer func(firestoreClient *firestore.Client) {
+		err := firestoreClient.Close()
+		if err != nil {
+			log.Printf("Error closing Firestore client: %v", err)
+		} else {
+			log.Println("Firestore client closed successfully.")
+		}
+	}(firestoreClient)
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
 
 	server := &http.Server{
-		Addr:         ":8080",
+		Addr:         ":" + port,
 		Handler:      router,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,

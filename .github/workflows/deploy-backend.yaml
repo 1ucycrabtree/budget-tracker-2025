@@ -71,6 +71,7 @@ jobs:
           env_vars: |
             GCP_PROJECT_ID=${{ env.GCP_PROJECT_ID }} 
             ENVIRONMENT=staging
+            service_account=${{ secrets.CLOUD_RUN_SERVICE_ACCOUNT }}@${{ env.GCP_PROJECT_ID }}.iam.gserviceaccount.com
 
       - name: Show deployed staging service URL
         run: |
@@ -130,6 +131,7 @@ jobs:
           env_vars: |
             GCP_PROJECT_ID=${{ env.GCP_PROJECT_ID }} 
             ENVIRONMENT=production
+            service_account=${{ secrets.CLOUD_RUN_SERVICE_ACCOUNT }}@${{ env.GCP_PROJECT_ID }}.iam.gserviceaccount.com
 
       - name: Show deployed prod service URL
         run: |

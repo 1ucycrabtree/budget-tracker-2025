@@ -15,6 +15,15 @@ import (
 	config "github.com/1ucycrabtree/budget-tracker-2025/backend/internal/setup"
 )
 
+var currentEnv string
+
+func init() {
+	currentEnv = os.Getenv("ENVIRONMENT")
+	if currentEnv == "" {
+		currentEnv = "development"
+	}
+	log.Printf("Application running in %s environment", currentEnv)
+}
 func main() {
 	ctx := context.Background()
 

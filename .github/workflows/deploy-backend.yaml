@@ -1,4 +1,4 @@
-name: Deploy Go Backend to Cloud Run
+name: deploy backend
 
 on:
   push:

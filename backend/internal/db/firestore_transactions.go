@@ -1,16 +1,17 @@
 package db
 
 import (
-	"cloud.google.com/go/firestore"
+	"backend/internal/exceptions"
+	"backend/internal/models"
 	"context"
 	"errors"
 	"fmt"
-	"github.com/1ucycrabtree/budget-tracker-2025/backend/internal/exceptions"
-	"github.com/1ucycrabtree/budget-tracker-2025/backend/internal/models"
+	"time"
+
+	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"time"
 )
 
 type Repository interface {

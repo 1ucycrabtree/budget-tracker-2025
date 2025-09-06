@@ -31,7 +31,7 @@ func (deps *RouterDeps) CreateTransactionHandler(w http.ResponseWriter, r *http.
 	transaction.InsertedAt = time.Now()
 	transaction.UpdatedAt = time.Now()
 
-	transactionID, err := deps.Repo.AddTransaction(context.Background(), transaction)
+	transactionID, err := deps.Repo.AddTransaction(context.Background(), userID, transaction)
 	if err != nil {
 		log.Printf("Error adding transaction to DB: %v", err)
 		http.Error(w, "Failed to create transaction", http.StatusInternalServerError)
@@ -80,13 +80,19 @@ func (deps *RouterDeps) GetTransactionByIDHandler(w http.ResponseWriter, r *http
 }
 
 func (deps *RouterDeps) ListTransactionsHandler(w http.ResponseWriter, r *http.Request) {
+	filters := make(map[string]string)
+	for key, values := range r.URL.Query() {
+		if len(values) > 0 {
+			filters[key] = values[0]
+		}
+	}
 
 	userID, ok := GetUserIDFromHeader(w, r)
 	if !ok {
 		return
 	}
 
-	transactions, err := deps.Repo.ListTransactions(context.Background(), userID, nil)
+	transactions, err := deps.Repo.ListTransactions(context.Background(), userID, filters)
 	if err != nil {
 		log.Printf("Error listing transactions: %v", err)
 		http.Error(w, "Failed to list transactions", http.StatusInternalServerError)

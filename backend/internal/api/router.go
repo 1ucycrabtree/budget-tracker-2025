@@ -36,6 +36,12 @@ func NewRouter(repo db.Repository, cfg *config.AppConfig) http.Handler {
 	r.HandleFunc("/transactions/bulk", deps.BulkAddTransactionsHandler).Methods("POST")
 	r.HandleFunc("/transactions/import", deps.ImportTransactionsHandler).Methods("POST")
 
+	// Category handlers
+	r.HandleFunc("/categories", deps.ListCategoriesHandler).Methods("GET")
+	r.HandleFunc("/categories", deps.AddCategoryHandler).Methods("POST")
+	r.HandleFunc("/categories/{id}", deps.UpdateCategoryHandler).Methods("PATCH")
+	r.HandleFunc("/categories/{id}", deps.DeleteCategoryHandler).Methods("DELETE")
+
 	c := cors.New(cors.Options{
 		AllowedOrigins:   cfg.CorsAllowedOrigins,
 		AllowedMethods:   []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},

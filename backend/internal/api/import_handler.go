@@ -48,12 +48,17 @@ func ParseCSV(r io.Reader, userID string) ([]models.Transaction, error) {
 
 	records, err := csvReader.ReadAll()
 	if err != nil {
-		return nil, err
+		return []models.Transaction{}, nil
 	}
 
 	for i, record := range records {
 		if i == 0 {
 			continue // skip header
+		}
+
+		// Ensure record has enough columns
+		if len(record) < 6 {
+			continue
 		}
 
 		// Parse date

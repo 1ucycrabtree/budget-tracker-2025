@@ -4,18 +4,13 @@ on:
   push:
     branches:
       - main
-      - feature/**
-      - task/**
-      - bugfix/**
-      - hotfix/**
-      - chore/**
     paths:
       - 'backend/**'
       - '.github/workflows/deploy-backend.yaml'
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Environment to deploy to (staging or production)'
+        description: 'Environment to deploy to'
         required: true
         default: 'staging'
         type: choice
@@ -84,13 +79,6 @@ jobs:
             GCP_PROJECT_ID=${{ env.GCP_PROJECT_ID }}
             ENVIRONMENT=staging
 
-      - name: Show deployed staging service URL
-        run: |
-          echo "Deployed URL for the staging backend:"
-          gcloud run services describe ${{ secrets.CLOUD_RUN_SERVICE_NAME_STAGING }} \
-            --region=${{ env.GCP_REGION }} \
-            --format="value(status.url)"
-
 ###########################
 # PRODUCTION DEPLOYMENT JOB
 ###########################
@@ -145,10 +133,3 @@ jobs:
           env_vars: |
             GCP_PROJECT_ID=${{ env.GCP_PROJECT_ID }}
             ENVIRONMENT=production
-
-      - name: Show deployed prod service URL
-        run: |
-          echo "Deployed URL for the prod backend:"
-          gcloud run services describe ${{ secrets.CLOUD_RUN_SERVICE_NAME_PROD }} \
-            --region=${{ env.GCP_REGION }} \
-            --format="value(status.url)"

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"cloud.google.com/go/firestore"
 	"context"
 	"errors"
 	"log"
@@ -10,9 +9,11 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/1ucycrabtree/budget-tracker-2025/backend/internal/api"
-	"github.com/1ucycrabtree/budget-tracker-2025/backend/internal/db"
-	config "github.com/1ucycrabtree/budget-tracker-2025/backend/internal/setup"
+	"cloud.google.com/go/firestore"
+
+	"backend/internal/api"
+	"backend/internal/db"
+	config "backend/internal/setup"
 )
 
 func main() {

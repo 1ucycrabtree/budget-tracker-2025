@@ -3,11 +3,11 @@ package api
 import (
 	"net/http"
 
-	"backend/internal/db"
-	config "backend/internal/setup"
-
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
+
+	"backend/internal/db"
+	config "backend/internal/setup"
 )
 
 type RouterDeps struct {

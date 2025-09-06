@@ -1,7 +1,6 @@
 package main
 
 import (
-	"cloud.google.com/go/firestore"
 	"context"
 	"errors"
 	"log"
@@ -9,6 +8,8 @@ import (
 	"os"
 	"os/signal"
 	"time"
+
+	"cloud.google.com/go/firestore"
 
 	"backend/internal/api"
 	"backend/internal/db"
@@ -20,7 +21,7 @@ func main() {
 
 	cfg := config.LoadConfig()
 
-	firestoreClient, err := db.NewFirestoreClient(ctx, cfg.FirestoreCredentialsPath)
+	firestoreClient, err := db.NewFirestoreClient(ctx, cfg.ProjectID, cfg.LocalCredentialsPath, cfg.Environment)
 	if err != nil {
 		log.Fatalf("Failed to create Firestore client: %v", err)
 	}

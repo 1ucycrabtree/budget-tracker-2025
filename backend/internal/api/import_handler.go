@@ -74,7 +74,7 @@ func ParseCSV(r io.Reader, userID string) ([]models.Transaction, error) {
 			TransactionDateTime: date,
 			Description:         strings.TrimSpace(record[5]),
 			Amount:              amount,
-			Category:            categoriser.Categorise(record[5]),
+			Category:            string(categoriser.Categorise(record[5])),
 			Type:                detectType(amount),
 			BankReference:       strings.TrimSpace(record[2]),
 			InsertedAt:          time.Now(),

@@ -1,9 +1,14 @@
 package api
 
 import (
+	"net/http"
+
+	"backend/internal/db"
+	config "backend/internal/setup"
+	"net/http"
+
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
-	"net/http"
 
 	"github.com/1ucycrabtree/budget-tracker-2025/backend/internal/db"
 	config "github.com/1ucycrabtree/budget-tracker-2025/backend/internal/setup"
@@ -21,14 +26,19 @@ func NewRouter(repo db.Repository, cfg *config.AppConfig) http.Handler {
 		Config: cfg,
 	}
 
+	// Health handler
 	r.HandleFunc("/health", deps.HealthCheckHandler).Methods("GET")
 
-	r.HandleFunc("/transactions", deps.CreateTransactionHandler).Methods("POST")
+	// Transaction handlers
 	r.HandleFunc("/transactions/{id}", deps.GetTransactionByIDHandler).Methods("GET")
 	r.HandleFunc("/transactions", deps.ListTransactionsHandler).Methods("GET")
-	r.HandleFunc("/transactions/bulk", deps.BulkAddTransactionsHandler).Methods("POST")
 	r.HandleFunc("/transactions/{id}", deps.UpdateTransactionHandler).Methods("PATCH")
 	r.HandleFunc("/transactions/{id}", deps.DeleteTransactionHandler).Methods("DELETE")
+
+	// Import handlers
+	r.HandleFunc("/transactions", deps.CreateTransactionHandler).Methods("POST")
+	r.HandleFunc("/transactions/bulk", deps.BulkAddTransactionsHandler).Methods("POST")
+	r.HandleFunc("/transactions/import", deps.ImportTransactionsHandler).Methods("POST")
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   cfg.CorsAllowedOrigins,

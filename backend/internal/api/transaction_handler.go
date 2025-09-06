@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"time"
 
-	"github.com/1ucycrabtree/budget-tracker-2025/backend/internal/exceptions"
-	"github.com/1ucycrabtree/budget-tracker-2025/backend/internal/models"
+	"github.com/gorilla/mux"
+
+	"backend/internal/exceptions"
+	"backend/internal/models"
 )
 
 func (deps *RouterDeps) CreateTransactionHandler(w http.ResponseWriter, r *http.Request) {
@@ -196,20 +197,4 @@ func (deps *RouterDeps) DeleteTransactionHandler(w http.ResponseWriter, r *http.
 	}
 
 	w.WriteHeader(http.StatusOK)
-}
-
-func GetUserIDFromHeader(w http.ResponseWriter, r *http.Request) (string, bool) {
-	userID := r.Header.Get("user-id")
-	if userID == "" {
-		http.Error(w, "Missing 'user-id' header", http.StatusBadRequest)
-		return "", false
-	}
-	return userID, true
-}
-
-func EncodeJSONResponse(w http.ResponseWriter, data interface{}) {
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(data); err != nil {
-		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
-	}
 }

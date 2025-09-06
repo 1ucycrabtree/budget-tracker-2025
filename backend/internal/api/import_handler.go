@@ -56,18 +56,17 @@ func ParseCSV(r io.Reader, userID string) ([]models.Transaction, error) {
 			continue // skip header
 		}
 
-		// Ensure record has enough columns
 		if len(record) < 6 {
 			continue
 		}
 
-		// Parse date
+		// parse date
 		date, err := time.Parse("02/01/2006", record[1])
 		if err != nil {
 			continue
 		}
 
-		// Parse amount and convert to int32 (pence)
+		// parse amount and convert to int32 (pence)
 		amountFloat, err := strconv.ParseFloat(record[3], 64)
 		if err != nil {
 			continue

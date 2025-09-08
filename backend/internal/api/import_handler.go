@@ -13,6 +13,20 @@ import (
 	"time"
 )
 
+// ImportTransactionsHandler godoc
+// @Summary Import transactions from CSV
+// @Description Import transactions for the authenticated user from a CSV file
+// @Tags import
+// @Accept multipart/form-data
+// @Produce json
+// @Param user-id header string true "User ID"
+// @Param file formData file true "CSV file"
+// @Success 200 {array} models.Transaction
+// @Failure 400 {string} string "Failed to read file"
+// @Failure 401 {string} string "Unauthorized"
+// @Failure 500 {string} string "Failed to parse csv or save transactions"
+// @Router /import [post]
+// @Security ApiKeyAuth
 func (deps *RouterDeps) ImportTransactionsHandler(w http.ResponseWriter, r *http.Request) {
 	file, _, err := r.FormFile("file")
 	if err != nil {
@@ -21,10 +35,7 @@ func (deps *RouterDeps) ImportTransactionsHandler(w http.ResponseWriter, r *http
 	}
 	defer file.Close()
 
-	userID, ok := GetUserIDFromHeader(w, r)
-	if !ok {
-		return
-	}
+	userID := r.Header.Get("user-id")
 
 	transactions, err := ParseCSV(file, userID)
 	if err != nil {

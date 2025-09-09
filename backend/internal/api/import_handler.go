@@ -13,6 +13,20 @@ import (
 	"time"
 )
 
+// ImportTransactionsHandler godoc
+// @Summary Import transactions from CSV
+// @Description Import transactions for the authenticated user from a CSV file
+// @Tags import
+// @Accept multipart/form-data
+// @Produce json
+// @Param user-id header string true "User ID"
+// @Param file formData file true "CSV file"
+// @Success 200 {array} models.Transaction
+// @Failure 400 {string} string "Failed to read file"
+// @Failure 401 {string} string "Unauthorized"
+// @Failure 500 {string} string "Failed to parse csv or save transactions"
+// @Router /import [post]
+// @Security ApiKeyAuth
 func (deps *RouterDeps) ImportTransactionsHandler(w http.ResponseWriter, r *http.Request) {
 	file, _, err := r.FormFile("file")
 	if err != nil {
@@ -21,10 +35,7 @@ func (deps *RouterDeps) ImportTransactionsHandler(w http.ResponseWriter, r *http
 	}
 	defer file.Close()
 
-	userID, ok := GetUserIDFromHeader(w, r)
-	if !ok {
-		return
-	}
+	userID := r.Header.Get("user-id")
 
 	transactions, err := ParseCSV(file, userID)
 	if err != nil {
@@ -48,7 +59,7 @@ func ParseCSV(r io.Reader, userID string) ([]models.Transaction, error) {
 
 	records, err := csvReader.ReadAll()
 	if err != nil {
-		return nil, err
+		return []models.Transaction{}, nil
 	}
 
 	for i, record := range records {
@@ -56,13 +67,17 @@ func ParseCSV(r io.Reader, userID string) ([]models.Transaction, error) {
 			continue // skip header
 		}
 
-		// Parse date
+		if len(record) < 6 {
+			continue
+		}
+
+		// parse date
 		date, err := time.Parse("02/01/2006", record[1])
 		if err != nil {
 			continue
 		}
 
-		// Parse amount and convert to int32 (pence)
+		// parse amount and convert to int32 (pence)
 		amountFloat, err := strconv.ParseFloat(record[3], 64)
 		if err != nil {
 			continue

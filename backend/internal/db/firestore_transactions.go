@@ -14,21 +14,9 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type Repository interface {
-	AddTransaction(ctx context.Context, transaction models.Transaction) (string, error)
-	GetTransactionByID(ctx context.Context, userID, transactionID string) (*models.Transaction, error)
-	ListTransactions(ctx context.Context, userID string, filters map[string]string) ([]models.Transaction, error)
-	BulkAddTransactions(ctx context.Context, transactions []models.Transaction) ([]models.Transaction, error)
-	UpdateTransaction(ctx context.Context, userID, transactionID string, updateData models.TransactionUpdate) (*models.Transaction, error)
-	DeleteTransaction(ctx context.Context, userID, transactionID string) error
-}
-
-type FirestoreRepository struct {
-	client *firestore.Client
-}
-
-func (r *FirestoreRepository) AddTransaction(ctx context.Context, transaction models.Transaction) (string, error) {
-	ref, _, err := r.client.Collection("transactions").Add(ctx, transaction)
+func (r *FirestoreRepository) AddTransaction(ctx context.Context, userID string, transaction models.Transaction) (string, error) {
+	collection := r.client.Collection("users").Doc(userID).Collection("transactions")
+	ref, _, err := collection.Add(ctx, transaction)
 	if err != nil {
 		return "", fmt.Errorf("failed to add transaction: %w", err)
 	}
@@ -36,7 +24,7 @@ func (r *FirestoreRepository) AddTransaction(ctx context.Context, transaction mo
 }
 
 func (r *FirestoreRepository) GetTransactionByID(ctx context.Context, userID, transactionID string) (*models.Transaction, error) {
-	docRef := r.client.Collection("transactions").Doc(transactionID)
+	docRef := r.client.Collection("users").Doc(userID).Collection("transactions").Doc(transactionID)
 	doc, err := docRef.Get(ctx)
 	if err != nil {
 		if status.Code(err) == codes.NotFound {
@@ -58,10 +46,11 @@ func (r *FirestoreRepository) GetTransactionByID(ctx context.Context, userID, tr
 }
 
 func (r *FirestoreRepository) ListTransactions(ctx context.Context, userID string, filters map[string]string) ([]models.Transaction, error) {
-	query := r.client.Collection("transactions").Where("userId", "==", userID)
+	colRef := r.client.Collection("users").Doc(userID).Collection("transactions")
+	query := colRef.Query
 
-	for field, value := range filters {
-		query = query.Where(field, "==", value)
+	for key, value := range filters {
+		query = query.Where(key, "==", value)
 	}
 
 	iter := query.Documents(ctx)
@@ -93,7 +82,7 @@ func (r *FirestoreRepository) ListTransactions(ctx context.Context, userID strin
 func (r *FirestoreRepository) BulkAddTransactions(ctx context.Context, transactions []models.Transaction) ([]models.Transaction, error) {
 	var docRefs []*firestore.DocumentRef
 	for _, transaction := range transactions {
-		docRef := r.client.Collection("transactions").NewDoc()
+		docRef := r.client.Collection("users").Doc(transaction.UserID).Collection("transactions").NewDoc()
 		_, err := docRef.Set(ctx, transaction)
 		if err != nil {
 			return nil, fmt.Errorf("failed to add transaction: %w", err)
@@ -108,7 +97,7 @@ func (r *FirestoreRepository) BulkAddTransactions(ctx context.Context, transacti
 }
 
 func (r *FirestoreRepository) UpdateTransaction(ctx context.Context, userID, transactionID string, updateData models.TransactionUpdate) (*models.Transaction, error) {
-	docRef := r.client.Collection("transactions").Doc(transactionID)
+	docRef := r.client.Collection("users").Doc(userID).Collection("transactions").Doc(transactionID)
 	doc, err := docRef.Get(ctx)
 	if err != nil {
 		if status.Code(err) == codes.NotFound {
@@ -148,7 +137,7 @@ func (r *FirestoreRepository) UpdateTransaction(ctx context.Context, userID, tra
 }
 
 func (r *FirestoreRepository) DeleteTransaction(ctx context.Context, userID, transactionID string) error {
-	docRef := r.client.Collection("transactions").Doc(transactionID)
+	docRef := r.client.Collection("users").Doc(userID).Collection("transactions").Doc(transactionID)
 	doc, err := docRef.Get(ctx)
 	if err != nil {
 		if status.Code(err) == codes.NotFound {

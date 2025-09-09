@@ -16,6 +16,19 @@ import (
 	config "backend/internal/setup"
 )
 
+// @title Auto Budget Tracker API
+// @version 1.0
+// @description Backend service for automatically importing and categorising user transactions.
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name Lucy Crabtree
+// @contact.url https://github.com/1ucycrabtree
+
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+
+// @host localhost:8080
+// @BasePath /
 func main() {
 	ctx := context.Background()
 

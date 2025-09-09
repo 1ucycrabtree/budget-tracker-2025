@@ -1,52 +1,26 @@
 package categoriser
 
-import "strings"
-
-type Category string
-
-const (
-	Housing   Category = "Housing"
-	Transport Category = "Transport"
-	Food      Category = "Food"
-	Dining    Category = "Dining"
-	Bills     Category = "Bills"
-	Other     Category = "Other"
+import (
+	"backend/internal/db"
+	"context"
+	"strings"
 )
 
-var CategoryMap = map[string]Category{
-	"rent":               Housing,
-	"council":            Housing,
-	"tfl":                Transport,
-	"west midlands rail": Transport,
-	"uber":               Transport,
-	"marks&spencer":      Food,
-	"tesco":              Food,
-	"co-op":              Food,
-	"sainsburys":         Food,
-	"m&s simply food":    Food,
-	"burger king":        Dining,
-	"mcdonalds":          Dining,
-	"deliveroo":          Dining,
-	"pret a manger":      Dining,
-	"bistro":             Dining,
-	"giardino":           Dining,
-	"apple.com":          Bills,
-	"amazon prime":       Bills,
-	"microsoft":          Bills,
-	"yorkshire water":    Housing,
-	"david lloyd":        Bills,
-	"petrol":             Transport,
-	"fuel":               Transport,
-}
-
-func Categorise(description string) Category {
-	desc := strings.ToLower(description)
-
-	for keyword, category := range CategoryMap {
-		if strings.Contains(desc, keyword) {
-			return category
+func CategoriseTransaction(ctx context.Context, repo db.Repository, userID, description, category string) (string, error) {
+	if category != "" {
+		return category, nil
+	}
+	userCategories, err := repo.ListUserCategories(ctx, userID)
+	if err != nil {
+		return "", err
+	}
+	descLower := strings.ToLower(description)
+	for _, cat := range userCategories {
+		for _, kw := range cat.Keywords {
+			if strings.Contains(descLower, strings.ToLower(kw)) {
+				return cat.Name, nil
+			}
 		}
 	}
-
-	return Other
+	return "Other", nil
 }

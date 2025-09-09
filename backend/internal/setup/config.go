@@ -2,9 +2,10 @@ package setup
 
 import (
 	"fmt"
-	"github.com/joho/godotenv"
 	"log"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
 type AppConfig struct {
@@ -23,7 +24,7 @@ func LoadConfig() *AppConfig {
 	cfg := &AppConfig{
 		ProjectID:            getEnv("GCP_PROJECT_ID", ""),
 		LocalCredentialsPath: getEnv("LOCAL_CREDENTIAL_PATH", ""),
-		CorsAllowedOrigins:   parseCSVEnv("CORS_ALLOWED_ORIGINS", "http://localhost:3000"),
+		CorsAllowedOrigins:   parseCSVEnv("CORS_ALLOWED_ORIGINS", "http://localhost:8080"),
 		Environment:          getEnv("ENVIRONMENT", "development"),
 	}
 

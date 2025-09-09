@@ -5,6 +5,14 @@ import (
 	"net/http"
 )
 
+// HealthCheckHandler godoc
+// @Summary Health check
+// @Description Returns the health status of the API
+// @Tags health
+// @Produce json
+// @Success 200 {object} map[string]string
+// @Failure 500 {string} string "Failed to encode response"
+// @Router /health [get]
 func (*RouterDeps) HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
 	response := map[string]string{
 		"status": "healthy",

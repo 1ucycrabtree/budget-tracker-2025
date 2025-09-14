@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import type { Transaction } from "../models/transaction";
 import { getTransactions } from "../api/transactions";
-import { TransactionList } from "../components/transactionList";
+import { TransactionList } from "../components/TransactionList";
 
 type Props = {
   userId: string;

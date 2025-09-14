@@ -1,17 +1,27 @@
 import { Transactions } from "./pages/Transaction";
+import { useAuth } from "./context/AuthContext";
+import { AuthButtons } from "./components/AuthButtons";
 
-function App() {
-  const userId = "lucy-test";
+function AppContent() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <p>Loading...</p>;
+  }
 
   return (
-    <div>
-      <h1 className="justify-self-center font-extrabold text-2xl px-4 py-2 uppercase">
+    <div className="px-4 py-4">
+      <h1 className="text-2xl font-extrabold uppercase mb-4 text-center">
         Budget Tracker
-        </h1>
-      <Transactions userId={userId} />
+      </h1>
+
+      <AuthButtons />
+
+      {user && <Transactions userId={user.uid} />}
     </div>
   );
 }
 
-export default App;
-
+export default function App() {
+  return <AppContent />;
+}

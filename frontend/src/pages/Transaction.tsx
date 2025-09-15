@@ -7,11 +7,22 @@ type Props = {
   userId: string;
 };
 
-export function Transactions({ userId }: Props) {
+export function Transactions({ userId }: Readonly<Props>) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   useEffect(() => {
-    getTransactions(userId).then((data) => setTransactions(data));
+    let isMounted = true;
+
+    const fetchTransactions = async () => {
+      const data = await getTransactions(userId);
+      if (isMounted) setTransactions(Array.isArray(data) ? data : []);
+    };
+
+    fetchTransactions();
+
+    return () => {
+      isMounted = false;
+    };
   }, [userId]);
 
   const sortedTransactions = useMemo(() => {

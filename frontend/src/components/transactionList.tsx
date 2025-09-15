@@ -9,7 +9,7 @@ interface Props {
 export const TransactionList: React.FC<Props> = ({ transactions }) => {
   if (transactions.length === 0) {
     return (
-      <div className="p-6 text-center text-gray-500 bg-gray-50 rounded-lg border border-gray-200 shadow-sm">
+      <div className="my-6 mx-24 p-6 text-center text-gray-500 bg-gray-50 rounded-lg border border-gray-200 shadow-sm">
         <p className="text-sm">No transactions yet. Start by adding one!</p>
       </div>
     );

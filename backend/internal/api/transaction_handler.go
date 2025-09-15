@@ -11,6 +11,7 @@ import (
 
 	"github.com/gorilla/mux"
 
+	"backend/internal/categoriser"
 	"backend/internal/exceptions"
 	"backend/internal/models"
 )
@@ -41,6 +42,13 @@ func (deps *RouterDeps) CreateTransactionHandler(w http.ResponseWriter, r *http.
 	transaction.UserID = userID
 	transaction.InsertedAt = time.Now()
 	transaction.UpdatedAt = time.Now()
+
+	category, err := categoriser.CategoriseTransaction(r.Context(), deps.Repo, userID, transaction.Description, transaction.Category)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to categorise transaction: %v", err), http.StatusInternalServerError)
+		return
+	}
+	transaction.Category = category
 
 	transactionID, err := deps.Repo.AddTransaction(context.Background(), userID, transaction)
 	if err != nil {

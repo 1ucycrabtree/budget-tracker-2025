@@ -1,4 +1,4 @@
-import { Transactions } from "./pages/Transaction";
+import Transactions from "./pages/Transaction";
 import { useAuth } from "./context/AuthContext";
 import { AuthPage } from "./components/AuthPage";
 
@@ -16,6 +16,7 @@ function AppContent() {
       </h1>
 
       <AuthPage />
+
 
       {user && <Transactions userId={user.uid} />}
     </div>

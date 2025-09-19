@@ -9,15 +9,15 @@ interface Props {
 export const TransactionList: React.FC<Props> = ({ transactions }) => {
   if (transactions.length === 0) {
     return (
-      <div className="p-6 text-center text-gray-500 bg-gray-50 rounded-lg border border-gray-200 shadow-sm">
+      <div className="my-6 mx-4 p-6 text-center text-gray-500 bg-gray-50 rounded-lg border border-gray-200 shadow-sm">
         <p className="text-sm">No transactions yet. Start by adding one!</p>
       </div>
     );
   }
 
   return (
-    <div className="w-[60%] max-w-[960px] mx-auto">
-      <table className="w-full border-collapse border border-gray-300">
+    <div className="w-[70%] mx-auto">
+      <table className="w-full border-collapse border border-gray-300 text-center">
         <thead className="bg-gray-100">
           <tr>
             <th className="border border-gray-300 px-4 py-2 text-left">Date</th>

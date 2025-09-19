@@ -1,4 +1,6 @@
 name: deploy-backend
+permissions:
+  contents: read
 
 on:
   push:

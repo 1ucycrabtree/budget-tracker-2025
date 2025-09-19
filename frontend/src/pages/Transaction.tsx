@@ -2,16 +2,28 @@ import { useEffect, useState, useMemo } from "react";
 import type { Transaction } from "../models/transaction";
 import { getTransactions } from "../api/transactions";
 import { TransactionList } from "../components/transactionList";
+import ImportTransactions from "../components/ImportTransactions";
 
 type Props = {
   userId: string;
 };
 
-export function Transactions({ userId }: Readonly<Props>) {
+export default function Transactions({ userId }: Readonly<Props>) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   useEffect(() => {
-    getTransactions(userId).then((data) => setTransactions(data));
+    let isMounted = true;
+
+    const fetchTransactions = async () => {
+      const data = await getTransactions(userId);
+      if (isMounted) setTransactions(Array.isArray(data) ? data : []);
+    };
+
+    fetchTransactions();
+
+    return () => {
+      isMounted = false;
+    };
   }, [userId]);
 
   const sortedTransactions = useMemo(() => {
@@ -23,8 +35,14 @@ export function Transactions({ userId }: Readonly<Props>) {
     });
   }, [transactions]);
 
+  const handleImportClick = async () => {
+    const data = await getTransactions(userId);
+    setTransactions(Array.isArray(data) ? data : []);
+  };
+
   return (
     <div>
+      <ImportTransactions userId={userId} onImport={handleImportClick} />
       <TransactionList transactions={sortedTransactions} />
     </div>
   );

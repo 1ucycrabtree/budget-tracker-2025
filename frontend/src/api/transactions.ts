@@ -33,3 +33,24 @@ export async function addTransaction(transaction: Transaction, userId: string) {
     return null;
   }
 }
+
+
+export async function importTransactions(file: File, userId: string): Promise<Transaction[]> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+
+  const res = await fetch(`${API_BASE}/transactions/import`, {
+    method: "POST",
+    headers: {
+      "User-Id": userId,
+    },
+    body: formData,
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to import transactions: ${await res.text()}`);
+  }
+
+  return res.json();
+}

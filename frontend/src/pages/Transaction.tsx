@@ -1,13 +1,13 @@
 import { useEffect, useState, useMemo } from "react";
 import type { Transaction } from "../models/transaction";
 import { getTransactions } from "../api/transactions";
-import { TransactionList } from "../components/TransactionList";
+import { TransactionList } from "../components/transactionList";
 
 type Props = {
   userId: string;
 };
 
-export function Transactions({ userId }: Props) {
+export function Transactions({ userId }: Readonly<Props>) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   useEffect(() => {

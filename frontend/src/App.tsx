@@ -1,5 +1,5 @@
 import { Transactions } from "./pages/Transaction";
-import { useAuth } from "./context/AuthContext";
+import { useAuth } from "./hooks/useAuth";
 import { AuthButtons } from "./components/AuthButtons";
 
 function AppContent() {

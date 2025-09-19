@@ -39,6 +39,12 @@ func (r *FirestoreRepository) AddUserCategory(ctx context.Context, userID string
 	return ref.ID, nil
 }
 
+func (r *FirestoreRepository) SetUserCategory(ctx context.Context, userID, categoryName string, category models.UserCategory) error {
+	docRef := r.client.Collection("users").Doc(userID).Collection("categories").Doc(categoryName)
+	_, err := docRef.Set(ctx, category)
+	return err
+}
+
 func (r *FirestoreRepository) UpdateUserCategory(ctx context.Context, userID, categoryID string, category models.UserCategory) error {
 	docRef := r.client.Collection("users").Doc(userID).Collection("categories").Doc(categoryID)
 	_, err := docRef.Set(ctx, category, firestore.MergeAll)

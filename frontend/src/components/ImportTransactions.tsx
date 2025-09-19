@@ -30,9 +30,9 @@ const ImportTransactions: React.FC<ImportTransactionsProps> = ({ userId, onImpor
     };
 
     return (
-        <>
+        <div className='mx-6 text-gray-700 hover:text-gray-900 transition'>
             <button type="button" onClick={handleButtonClick}>
-                Import Transactions (CSV)
+                Import Transactions
             </button>
             <input
                 type="file"
@@ -41,7 +41,7 @@ const ImportTransactions: React.FC<ImportTransactionsProps> = ({ userId, onImpor
                 style={{ display: 'none' }}
                 onChange={handleFileChange}
             />
-        </>
+        </div>
     );
 };
 

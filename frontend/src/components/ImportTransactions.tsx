@@ -1,15 +1,12 @@
-import React, { useRef } from "react";
-import { importTransactions } from "../api/transactions";
+import React, { useRef } from 'react';
+import { importTransactions } from '../api/transactions';
 
 type ImportTransactionsProps = {
   userId: string;
   onImport: () => Promise<void>;
 };
 
-const ImportTransactions: React.FC<ImportTransactionsProps> = ({
-  userId,
-  onImport,
-}) => {
+const ImportTransactions: React.FC<ImportTransactionsProps> = ({ userId, onImport }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleButtonClick = async () => {
@@ -17,12 +14,10 @@ const ImportTransactions: React.FC<ImportTransactionsProps> = ({
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!userId) {
-      console.error("User ID is undefined");
+      console.error('User ID is undefined');
       return;
     }
 
@@ -30,7 +25,7 @@ const ImportTransactions: React.FC<ImportTransactionsProps> = ({
       await importTransactions(file, userId);
     }
     if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+      fileInputRef.current.value = '';
     }
   };
 
@@ -43,7 +38,7 @@ const ImportTransactions: React.FC<ImportTransactionsProps> = ({
         type="file"
         accept=".csv"
         ref={fileInputRef}
-        style={{ display: "none" }}
+        style={{ display: 'none' }}
         onChange={handleFileChange}
       />
     </div>

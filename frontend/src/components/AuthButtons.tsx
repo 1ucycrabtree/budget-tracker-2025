@@ -1,27 +1,19 @@
-import React, { useState } from "react";
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-} from "firebase/auth";
-import { auth } from "../firebase";
-import { useAuth } from "../hooks/useAuth";
+import React, { useState } from 'react';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { auth } from '../firebase';
+import { useAuth } from '../hooks/useAuth';
 
 export const AuthButtons: React.FC = () => {
   const { user } = useAuth();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   const register = () => {
-    createUserWithEmailAndPassword(auth, email, password).catch((err) =>
-      alert(err.message),
-    );
+    createUserWithEmailAndPassword(auth, email, password).catch((err) => alert(err.message));
   };
 
   const login = () => {
-    signInWithEmailAndPassword(auth, email, password).catch((err) =>
-      alert(err.message),
-    );
+    signInWithEmailAndPassword(auth, email, password).catch((err) => alert(err.message));
   };
 
   const logout = () => {
@@ -39,11 +31,7 @@ export const AuthButtons: React.FC = () => {
 
   return (
     <div>
-      <input
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="Email"
-      />
+      <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" />
       <input
         type="password"
         value={password}

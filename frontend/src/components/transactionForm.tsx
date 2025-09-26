@@ -1,12 +1,12 @@
-import React, { useState } from "react";
-import type { Transaction } from "../models/transaction";
+import React, { useState } from 'react';
+import type { Transaction } from '../models/transaction';
 
 interface Props {
   onAdd: (t: Transaction) => void;
 }
 
 export const TransactionForm: React.FC<Props> = ({ onAdd }) => {
-  const [description, setDescription] = useState("");
+  const [description, setDescription] = useState('');
   const [amount, setAmount] = useState<number>(0);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -14,11 +14,11 @@ export const TransactionForm: React.FC<Props> = ({ onAdd }) => {
     onAdd({
       description,
       amount,
-      category: "",
-      type: amount > 0 ? "Credit" : "Debit",
+      category: '',
+      type: amount > 0 ? 'Credit' : 'Debit',
       transactionDateTime: new Date().toISOString(),
     });
-    setDescription("");
+    setDescription('');
     setAmount(0);
   };
 

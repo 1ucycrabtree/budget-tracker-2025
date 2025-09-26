@@ -1,5 +1,5 @@
-import type { User } from "firebase/auth";
-import React from "react";
+import type { User } from 'firebase/auth';
+import React from 'react';
 
 interface Props {
   user: User;

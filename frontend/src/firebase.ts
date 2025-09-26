@@ -1,14 +1,14 @@
-import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyA2bCdVPOlObvW4UXMIEmwIo0Hh9gCvjlg",
-  authDomain: "budget-tracker-462522.firebaseapp.com",
-  projectId: "budget-tracker-462522",
-  storageBucket: "budget-tracker-462522.firebasestorage.app",
-  messagingSenderId: "518890210937",
-  appId: "1:518890210937:web:9a12af48a71214ac4bb6a8",
+  apiKey: import.meta.env.FIREBASE_API_KEY,
+  authDomain: import.meta.env.FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.FIREBASE_APP_ID,
 };
 
 const app = initializeApp(firebaseConfig);

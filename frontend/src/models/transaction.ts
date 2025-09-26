@@ -4,7 +4,7 @@ export interface Transaction {
   description: string;
   amount: number;
   category: string;
-  type: "Credit" | "Debit" | "-";
+  type: 'Credit' | 'Debit' | '-';
   transactionDateTime: string;
   bankReference?: string;
 }

@@ -1,19 +1,15 @@
-import React, { useState } from "react";
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-} from "firebase/auth";
-import { auth } from "../firebase";
-import { AuthForm } from "./AuthForm";
-import { LoggedInView } from "./LoggedInView";
-import { setupUserProfile } from "../api/user";
-import { useAuth } from "../hooks/useAuth";
+import React, { useState } from 'react';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { auth } from '../firebase';
+import { AuthForm } from './AuthForm';
+import { LoggedInView } from './LoggedInView';
+import { setupUserProfile } from '../api/user';
+import { useAuth } from '../hooks/useAuth';
 
 export const AuthPage: React.FC = () => {
   const { user } = useAuth();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isRegister, setIsRegister] = useState(false);
 
@@ -22,15 +18,11 @@ export const AuthPage: React.FC = () => {
     setError(null);
     try {
       if (isRegister) {
-        const createdUserCredential = await createUserWithEmailAndPassword(
-          auth,
-          email,
-          password,
-        );
+        const createdUserCredential = await createUserWithEmailAndPassword(auth, email, password);
         const createdUser = createdUserCredential.user;
         await setupUserProfile({
           uid: createdUser.uid,
-          email: createdUser.email ?? "",
+          email: createdUser.email ?? '',
         });
       } else {
         await signInWithEmailAndPassword(auth, email, password);
@@ -39,7 +31,7 @@ export const AuthPage: React.FC = () => {
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError("An unknown error occurred.");
+        setError('An unknown error occurred.');
       }
     }
   };

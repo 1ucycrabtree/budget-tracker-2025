@@ -1,6 +1,6 @@
-import React from "react";
-import type { Transaction } from "../models/transaction";
-import { formatDate, formatAmount } from "../utils/format";
+import React from 'react';
+import type { Transaction } from '../models/transaction';
+import { formatDate, formatAmount } from '../utils/format';
 
 interface Props {
   transactions: Transaction[];
@@ -21,15 +21,9 @@ export const TransactionList: React.FC<Props> = ({ transactions }) => {
         <thead className="bg-gray-100">
           <tr>
             <th className="border border-gray-300 px-4 py-2 text-left">Date</th>
-            <th className="border border-gray-300 px-4 py-2 text-left">
-              Description
-            </th>
-            <th className="border border-gray-300 px-4 py-2 text-left">
-              Category
-            </th>
-            <th className="border border-gray-300 px-4 py-2 text-right">
-              Amount
-            </th>
+            <th className="border border-gray-300 px-4 py-2 text-left">Description</th>
+            <th className="border border-gray-300 px-4 py-2 text-left">Category</th>
+            <th className="border border-gray-300 px-4 py-2 text-right">Amount</th>
           </tr>
         </thead>
         <tbody>
@@ -38,9 +32,7 @@ export const TransactionList: React.FC<Props> = ({ transactions }) => {
               <td className="border border-gray-300 px-4 py-2">
                 {formatDate(t.transactionDateTime)}
               </td>
-              <td className="border border-gray-300 px-4 py-2">
-                {t.description}
-              </td>
+              <td className="border border-gray-300 px-4 py-2">{t.description}</td>
               <td className="border border-gray-300 px-4 py-2">{t.category}</td>
               <td className="border border-gray-300 px-4 py-2 text-right">
                 {formatAmount(t.amount)}

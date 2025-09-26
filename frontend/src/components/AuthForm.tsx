@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface Props {
   email: string;
@@ -43,15 +43,13 @@ export const AuthForm: React.FC<Props> = ({
       className="w-full py-2 rounded-full bg-gray-700 text-white hover:bg-gray-800 transition"
       onClick={onSubmit}
     >
-      {isRegister ? "Register" : "Log In"}
+      {isRegister ? 'Register' : 'Log In'}
     </button>
     <button
       className="w-full py-2 text-blue-600 hover:underline bg-transparent border-none cursor-pointer"
       onClick={onToggleMode}
     >
-      {isRegister
-        ? "Already have an account? Log In"
-        : "Don't have an account? Register"}
+      {isRegister ? 'Already have an account? Log In' : "Don't have an account? Register"}
     </button>
   </div>
 );

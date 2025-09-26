@@ -1,9 +1,9 @@
 export async function setupUserProfile(user: { uid: string; email: string }) {
   try {
     const response = await fetch(`/api/setupUserProfile`, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         uid: user.uid,
@@ -11,10 +11,10 @@ export async function setupUserProfile(user: { uid: string; email: string }) {
       }),
     });
     if (!response.ok) {
-      throw new Error("Failed to set up user profile");
+      throw new Error('Failed to set up user profile');
     }
-    console.log("User profile and categories seeded via backend");
+    console.log('User profile and categories seeded via backend');
   } catch (error) {
-    console.error("Error seeding user profile:", error);
+    console.error('Error seeding user profile:', error);
   }
 }

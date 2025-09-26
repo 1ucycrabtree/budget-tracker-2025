@@ -32,14 +32,14 @@ export default function Transactions({ userId }: Readonly<Props>) {
     });
   }, [transactions]);
 
-  const handleImportClick = async () => {
+  const refreshTransactions = async () => {
     const data = await getTransactions(userId);
     setTransactions(Array.isArray(data) ? data : []);
   };
 
   return (
     <div>
-      <ImportTransactions userId={userId} onImport={handleImportClick} />
+      <ImportTransactions userId={userId} onImportComplete={refreshTransactions} />
       <TransactionList transactions={sortedTransactions} />
     </div>
   );

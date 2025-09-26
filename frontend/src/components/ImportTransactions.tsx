@@ -3,14 +3,13 @@ import { importTransactions } from '../api/transactions';
 
 type ImportTransactionsProps = {
   userId: string;
-  onImport: () => Promise<void>;
+  onImportComplete: () => void;
 };
 
-const ImportTransactions: React.FC<ImportTransactionsProps> = ({ userId, onImport }) => {
+const ImportTransactions: React.FC<ImportTransactionsProps> = ({ userId, onImportComplete }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleButtonClick = async () => {
-    await onImport();
+  const handleButtonClick = () => {
     fileInputRef.current?.click();
   };
 
@@ -20,9 +19,18 @@ const ImportTransactions: React.FC<ImportTransactionsProps> = ({ userId, onImpor
       console.error('User ID is undefined');
       return;
     }
-
     if (file) {
-      await importTransactions(file, userId);
+      try {
+        await importTransactions(file, userId);
+        onImportComplete();
+      } catch (error: unknown) {
+        const errorMessage =
+          error && typeof error === 'object' && 'message' in error
+            ? (error as { message: string }).message
+            : 'Failed to import transactions.';
+        alert(errorMessage);
+        console.error('Failed to import transactions.', error);
+      }
     }
     if (fileInputRef.current) {
       fileInputRef.current.value = '';

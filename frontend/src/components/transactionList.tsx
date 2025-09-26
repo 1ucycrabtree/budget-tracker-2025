@@ -28,7 +28,7 @@ export const TransactionList: React.FC<Props> = ({ transactions }) => {
         </thead>
         <tbody>
           {transactions.map((t) => (
-            <tr key={t.id} className="hover:bg-gray-50">
+            <tr key={t.id || `${t.transactionDateTime}-${t.amount}`} className="hover:bg-gray-50">
               <td className="border border-gray-300 px-4 py-2">
                 {formatDate(t.transactionDateTime)}
               </td>

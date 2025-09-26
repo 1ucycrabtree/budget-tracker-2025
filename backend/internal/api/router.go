@@ -67,7 +67,7 @@ func NewRouter(repo db.Repository, cfg *config.AppConfig) http.Handler {
 	c := cors.New(cors.Options{
 		AllowedOrigins:   cfg.CorsAllowedOrigins,
 		AllowedMethods:   []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Content-Type", "Authorization", "User-Id"},
+		AllowedHeaders:   []string{"Content-Type", "Authorization", "user-id"},
 		AllowCredentials: true,
 		Debug:            true,
 	})

@@ -5,5 +5,5 @@ interface Props {
 }
 
 export const ErrorMessage: React.FC<Props> = ({ message }) => (
-  <div className="text-red-500 mb-3 text-center">{message}</div>
+  <div className="text-red-500 mb-3 text-center">{message.toLowerCase()}</div>
 );

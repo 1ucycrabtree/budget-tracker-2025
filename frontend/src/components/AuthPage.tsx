@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import {
   createUserWithEmailAndPassword,
@@ -10,7 +9,6 @@ import { AuthForm } from "./AuthForm";
 import { LoggedInView } from "./LoggedInView";
 import { setupUserProfile } from "../api/user";
 import { useAuth } from "../hooks/useAuth";
-
 
 export const AuthPage: React.FC = () => {
   const { user } = useAuth();
@@ -24,9 +22,16 @@ export const AuthPage: React.FC = () => {
     setError(null);
     try {
       if (isRegister) {
-        const createdUserCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const createdUserCredential = await createUserWithEmailAndPassword(
+          auth,
+          email,
+          password,
+        );
         const createdUser = createdUserCredential.user;
-        await setupUserProfile({ uid: createdUser.uid, email: createdUser.email ?? ""});
+        await setupUserProfile({
+          uid: createdUser.uid,
+          email: createdUser.email ?? "",
+        });
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
@@ -60,4 +65,3 @@ export const AuthPage: React.FC = () => {
     />
   );
 };
-

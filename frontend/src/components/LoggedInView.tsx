@@ -11,7 +11,8 @@ export const LoggedInView: React.FC<Props> = ({ user, onLogout }) => (
     <h4 className="mb-4">Welcome, {user.email}!</h4>
     <button
       className="w-32 py-1 rounded-full bg-gray-700 text-white hover:bg-gray-800 transition"
-      onClick={onLogout}>
+      onClick={onLogout}
+    >
       Log out
     </button>
   </div>

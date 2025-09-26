@@ -18,11 +18,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     return unsubscribe;
   }, []);
 
-  const contextValue = React.useMemo(() => ({ user, loading }), [user, loading]);
+  const contextValue = React.useMemo(
+    () => ({ user, loading }),
+    [user, loading],
+  );
 
   return (
-    <AuthContext.Provider value={contextValue}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
 };

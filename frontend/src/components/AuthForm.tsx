@@ -49,7 +49,9 @@ export const AuthForm: React.FC<Props> = ({
       className="w-full py-2 text-blue-600 hover:underline bg-transparent border-none cursor-pointer"
       onClick={onToggleMode}
     >
-      {isRegister ? "Already have an account? Log In" : "Don't have an account? Register"}
+      {isRegister
+        ? "Already have an account? Log In"
+        : "Don't have an account? Register"}
     </button>
   </div>
 );

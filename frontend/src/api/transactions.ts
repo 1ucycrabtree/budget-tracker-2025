@@ -1,15 +1,12 @@
 import type { Transaction } from "../models/transaction";
 
-// temporary API base URL
-const API_BASE = "http://localhost:8080";
-
 export async function getTransactions(userId: string): Promise<Transaction[]> {
   try {
-    const res = await fetch(`${API_BASE}/transactions`, {
+    const res = await fetch(`/api/transactions`, {
       headers: { "User-Id": userId },
     });
     if (!res.ok) throw new Error("Network response was not ok");
-    return await res.json();
+    return (await res.json()) as Transaction[];
   } catch (err) {
     console.error("Failed to fetch transactions:", err);
     return [];
@@ -18,7 +15,7 @@ export async function getTransactions(userId: string): Promise<Transaction[]> {
 
 export async function addTransaction(transaction: Transaction, userId: string) {
   try {
-    const res = await fetch(`${API_BASE}/transactions`, {
+    const res = await fetch(`/api/transactions`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -34,13 +31,14 @@ export async function addTransaction(transaction: Transaction, userId: string) {
   }
 }
 
-
-export async function importTransactions(file: File, userId: string): Promise<Transaction[]> {
+export async function importTransactions(
+  file: File,
+  userId: string
+): Promise<Transaction[]> {
   const formData = new FormData();
   formData.append("file", file);
 
-
-  const res = await fetch(`${API_BASE}/transactions/import`, {
+  const res = await fetch(`$/api/transactions/import`, {
     method: "POST",
     headers: {
       "User-Id": userId,
@@ -52,5 +50,5 @@ export async function importTransactions(file: File, userId: string): Promise<Tr
     throw new Error(`Failed to import transactions: ${await res.text()}`);
   }
 
-  return res.json();
+  return (await res.json()) as Transaction[];
 }

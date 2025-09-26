@@ -6,6 +6,7 @@ function AppContent() {
   const { user, loading } = useAuth();
 
   if (loading) {
+    // TODO: Custom loading component
     return <p>Loading...</p>;
   }
 
@@ -16,7 +17,6 @@ function AppContent() {
       </h1>
 
       <AuthPage />
-
 
       {user && <Transactions userId={user.uid} />}
     </div>

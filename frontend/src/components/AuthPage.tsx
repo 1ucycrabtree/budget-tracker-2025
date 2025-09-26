@@ -6,10 +6,10 @@ import {
   signOut,
 } from "firebase/auth";
 import { auth } from "../firebase";
-import { useAuth } from "../context/AuthContext";
 import { AuthForm } from "./AuthForm";
 import { LoggedInView } from "./LoggedInView";
 import { setupUserProfile } from "../api/user";
+import { useAuth } from "../hooks/useAuth";
 
 
 export const AuthPage: React.FC = () => {
@@ -19,6 +19,7 @@ export const AuthPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isRegister, setIsRegister] = useState(false);
 
+  // TODO: Add forget password functionality
   const handleAuth = async () => {
     setError(null);
     try {
@@ -29,8 +30,12 @@ export const AuthPage: React.FC = () => {
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unknown error occurred.");
+      }
     }
   };
 

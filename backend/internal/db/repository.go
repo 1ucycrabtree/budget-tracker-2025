@@ -19,7 +19,6 @@ type Repository interface {
 	AddUserCategory(ctx context.Context, userID string, category models.UserCategory) (string, error)
 	UpdateUserCategory(ctx context.Context, userID, categoryID string, category models.UserCategory) error
 	DeleteUserCategory(ctx context.Context, userID, categoryID string) error
-	SetUserCategory(ctx context.Context, userID, categoryName string, category models.UserCategory) error
 }
 
 type FirestoreRepository struct {

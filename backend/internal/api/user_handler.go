@@ -47,7 +47,7 @@ func (deps *SetupUserProfileDeps) SetupUserProfileHandler(w http.ResponseWriter,
 
 	ctx := context.Background()
 	for _, cat := range defaultCategories {
-		err := deps.Repo.SetUserCategory(ctx, req.UID, cat.Name, cat)
+		_, err := deps.Repo.AddUserCategory(ctx, req.UID, cat)
 		if err != nil {
 			log.Printf("Failed to add category %s for user %s: %v", cat.Name, req.UID, err)
 			w.WriteHeader(http.StatusInternalServerError)

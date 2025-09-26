@@ -43,6 +43,10 @@ func NewRouter(repo db.Repository, cfg *config.AppConfig) http.Handler {
 	// Health handler (no user-id required)
 	r.HandleFunc("/health", deps.HealthCheckHandler).Methods("GET")
 
+	// User profile setup (no user-id required)
+	userProfileDeps := &SetupUserProfileDeps{Repo: repo}
+	r.HandleFunc("/setupUserProfile", userProfileDeps.SetupUserProfileHandler).Methods("POST")
+
 	// Transaction handlers (require user-id)
 	r.Handle("/transactions/{id}", RequireUserIDMiddleware(http.HandlerFunc(deps.GetTransactionByIDHandler))).Methods("GET")
 	r.Handle("/transactions", RequireUserIDMiddleware(http.HandlerFunc(deps.ListTransactionsHandler))).Methods("GET")
@@ -63,7 +67,7 @@ func NewRouter(repo db.Repository, cfg *config.AppConfig) http.Handler {
 	c := cors.New(cors.Options{
 		AllowedOrigins:   cfg.CorsAllowedOrigins,
 		AllowedMethods:   []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Content-Type", "Authorization"},
+		AllowedHeaders:   []string{"Content-Type", "Authorization", "user-id"},
 		AllowCredentials: true,
 		Debug:            true,
 	})

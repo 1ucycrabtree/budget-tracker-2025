@@ -4,10 +4,12 @@ on:
   push:
     paths:
       - "frontend/**"
+      - ".github/workflows/frontend-ci.yaml"
     branches: [main, master]
   pull_request:
     paths:
       - "frontend/**"
+      - ".github/workflows/frontend-ci.yaml"
 
 jobs:
   build-and-lint:

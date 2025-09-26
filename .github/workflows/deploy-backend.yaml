@@ -7,14 +7,20 @@ on:
     branches:
       - main
     paths:
-      - 'backend/**'
-      - '.github/workflows/deploy-backend.yaml'
+      - "backend/**"
+      - ".github/workflows/deploy-backend.yaml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "backend/**"
+      - ".github/workflows/deploy-backend.yaml"
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Environment to deploy to'
+        description: "Environment to deploy to"
         required: true
-        default: 'staging'
+        default: "staging"
         type: choice
         options:
           - staging
@@ -81,9 +87,9 @@ jobs:
             GCP_PROJECT_ID=${{ env.GCP_PROJECT_ID }}
             ENVIRONMENT=staging
 
-###########################
-# PRODUCTION DEPLOYMENT JOB
-###########################
+  ###########################
+  # PRODUCTION DEPLOYMENT JOB
+  ###########################
   deploy-prod:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'

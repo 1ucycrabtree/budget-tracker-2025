@@ -20,7 +20,7 @@ import (
 // @Router /categories [get]
 // @Security ApiKeyAuth
 func (deps *RouterDeps) ListCategoriesHandler(w http.ResponseWriter, r *http.Request) {
-	userID := r.Header.Get("user-id")
+	userID := r.Header.Get(HeaderUserID)
 
 	categories, err := deps.Repo.ListUserCategories(r.Context(), userID)
 	if err != nil {
@@ -52,7 +52,7 @@ func (deps *RouterDeps) AddCategoryHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	userID := r.Header.Get("user-id")
+	userID := r.Header.Get(HeaderUserID)
 
 	categoryID, err := deps.Repo.AddUserCategory(r.Context(), userID, category)
 	if err != nil {
@@ -93,7 +93,7 @@ func (deps *RouterDeps) UpdateCategoryHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	userID := r.Header.Get("user-id")
+	userID := r.Header.Get(HeaderUserID)
 
 	if err := deps.Repo.UpdateUserCategory(r.Context(), userID, categoryID, category); err != nil {
 		http.Error(w, "Failed to update category", http.StatusInternalServerError)
@@ -124,7 +124,7 @@ func (deps *RouterDeps) DeleteCategoryHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	userID := r.Header.Get("user-id")
+	userID := r.Header.Get(HeaderUserID)
 
 	if err := deps.Repo.DeleteUserCategory(r.Context(), userID, categoryID); err != nil {
 		http.Error(w, "Failed to delete category", http.StatusInternalServerError)

@@ -22,7 +22,7 @@ type RouterDeps struct {
 // RequireUserIDMiddleware checks for the presence of the "user-id" header.
 func RequireUserIDMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		userID := r.Header.Get("user-id")
+		userID := r.Header.Get(HeaderUserID)
 		if userID == "" {
 			http.Error(w, "Missing user-id header", http.StatusUnauthorized)
 			return
@@ -67,7 +67,7 @@ func NewRouter(repo db.Repository, cfg *config.AppConfig) http.Handler {
 	c := cors.New(cors.Options{
 		AllowedOrigins:   cfg.CorsAllowedOrigins,
 		AllowedMethods:   []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Content-Type", "Authorization", "user-id"},
+		AllowedHeaders:   []string{"Content-Type", "Authorization", HeaderUserID},
 		AllowCredentials: true,
 		Debug:            true,
 	})

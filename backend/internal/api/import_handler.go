@@ -36,7 +36,7 @@ func (deps *RouterDeps) ImportTransactionsHandler(w http.ResponseWriter, r *http
 	}
 	defer file.Close()
 
-	userID := r.Header.Get("user-id")
+	userID := r.Header.Get(HeaderUserID)
 
 	transactions, err := ParseCSV(r.Context(), deps.Repo, file, userID)
 	if err != nil {

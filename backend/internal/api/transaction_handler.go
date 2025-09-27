@@ -37,7 +37,7 @@ func (deps *RouterDeps) CreateTransactionHandler(w http.ResponseWriter, r *http.
 		return
 	}
 
-	userID := r.Header.Get("user-id")
+	userID := r.Header.Get(HeaderUserID)
 
 	transaction.UserID = userID
 	transaction.InsertedAt = time.Now()
@@ -84,7 +84,7 @@ func (deps *RouterDeps) GetTransactionByIDHandler(w http.ResponseWriter, r *http
 		return
 	}
 
-	userID := r.Header.Get("user-id")
+	userID := r.Header.Get(HeaderUserID)
 
 	transaction, err := deps.Repo.GetTransactionByID(context.Background(), userID, transactionID)
 	if err != nil {
@@ -97,7 +97,7 @@ func (deps *RouterDeps) GetTransactionByIDHandler(w http.ResponseWriter, r *http
 		var notFoundErr *exceptions.TransactionNotFoundError
 		if errors.As(err, &notFoundErr) {
 			log.Print(exceptions.TransactionNotFound(transactionID))
-			http.Error(w, "transaction not found", http.StatusNotFound)
+			http.Error(w, "Transaction not found", http.StatusNotFound)
 			return
 		}
 		log.Printf("Error getting transaction: %v", err)
@@ -129,7 +129,7 @@ func (deps *RouterDeps) ListTransactionsHandler(w http.ResponseWriter, r *http.R
 		}
 	}
 
-	userID := r.Header.Get("user-id")
+	userID := r.Header.Get(HeaderUserID)
 
 	transactions, err := deps.Repo.ListTransactions(context.Background(), userID, filters)
 	if err != nil {
@@ -162,7 +162,7 @@ func (deps *RouterDeps) BulkAddTransactionsHandler(w http.ResponseWriter, r *htt
 		return
 	}
 
-	userID := r.Header.Get("user-id")
+	userID := r.Header.Get(HeaderUserID)
 
 	for i := range transactions {
 		transactions[i].UserID = userID
@@ -205,7 +205,7 @@ func (deps *RouterDeps) UpdateTransactionHandler(w http.ResponseWriter, r *http.
 		return
 	}
 
-	userID := r.Header.Get("user-id")
+	userID := r.Header.Get(HeaderUserID)
 
 	var updateData models.TransactionUpdate
 	if err := json.NewDecoder(r.Body).Decode(&updateData); err != nil {
@@ -258,7 +258,7 @@ func (deps *RouterDeps) DeleteTransactionHandler(w http.ResponseWriter, r *http.
 		return
 	}
 
-	userID := r.Header.Get("user-id")
+	userID := r.Header.Get(HeaderUserID)
 
 	if err := deps.Repo.DeleteTransaction(context.Background(), userID, transactionID); err != nil {
 		var forbiddenErr *exceptions.UserForbiddenError

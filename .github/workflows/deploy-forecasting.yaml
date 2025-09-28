@@ -1,0 +1,73 @@
+name: deploy-backend
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "forecasting/**"
+      - ".github/workflows/deploy-forecasting.yaml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "forecasting/**"
+      - ".github/workflows/deploy-forecasting.yaml"
+  workflow_dispatch:
+
+env:
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GCP_REGION: ${{ secrets.GCP_REGION }}
+  ARTIFACT_REGISTRY_REPO: ${{ secrets.ARTIFACT_REGISTRY_REPO }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Configure Docker to use Artifact Registry
+        run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
+
+      - name: Ensure Artifact Registry exists
+        run: |
+          gcloud artifacts repositories describe ${{ env.ARTIFACT_REGISTRY_REPO }} \
+            --location=${{ env.GCP_REGION }} \
+            --format="value(name)" || \
+          gcloud artifacts repositories create ${{ env.ARTIFACT_REGISTRY_REPO }} \
+            --repository-format=docker \
+            --location=${{ env.GCP_REGION }} \
+            --description="Docker repository for Go backend images"
+
+      - name: Build and push Docker image
+        run: |
+          IMAGE_TAG="${{ github.sha }}"
+          SERVICE_NAME="${{ secrets.CLOUD_RUN_SERVICE_NAME_FORECASTING }}"
+          FULL_IMAGE_NAME="${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPO }}/$SERVICE_NAME:$IMAGE_TAG"
+
+          echo "Building Docker image for forecasting: $FULL_IMAGE_NAME"
+          docker build -t $FULL_IMAGE_NAME forecasting/
+          echo "Pushing Docker image to forecasting: $FULL_IMAGE_NAME"
+          docker push $FULL_IMAGE_NAME
+
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ secrets.CLOUD_RUN_SERVICE_NAME_FORECASTING }}
+          region: ${{ env.GCP_REGION }}
+          image: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPO }}/${{ secrets.CLOUD_RUN_SERVICE_NAME_FORECASTING }}:${{ github.sha }}
+          env_vars: |
+            GCP_PROJECT_ID=${{ env.GCP_PROJECT_ID }}

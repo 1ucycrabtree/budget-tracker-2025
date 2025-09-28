@@ -24,7 +24,7 @@ func (deps *RouterDeps) ForecastHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	dailySpends := analytics.PrepareForecastData(transactions)
-	forecast := analytics.GetForecast(dailySpends, 30) // forecast for the next 30 days
+	forecast := analytics.GetPolynomialForecast(dailySpends, 30, 3) // forecast for the next 30 days using a cubic polynomial
 
 	if forecast == nil {
 		http.Error(w, "Not enough data to generate a forecast", http.StatusBadRequest)

@@ -6,6 +6,7 @@ import (
 
 	"backend/internal/models"
 
+	"github.com/aclements/go-moremath/fit"
 	"gonum.org/v1/gonum/stat"
 )
 
@@ -37,9 +38,47 @@ func PrepareForecastData(transactions []models.Transaction) []DailySpend {
 	return result
 }
 
-func GetForecast(dailySpends []DailySpend, forecastDays int) []DailySpend {
+func GetPolynomialForecast(dailySpends []DailySpend, forecastDays int, degree int) []DailySpend {
+	if len(dailySpends) < degree+1 {
+		return nil // not enough data to make a forecast
+	}
+
+	var xTime, ySpend []float64
+	startDate := dailySpends[0].Date
+
+	for _, dailySpend := range dailySpends {
+		daysSinceStart := dailySpend.Date.Sub(startDate).Hours() / 24
+		xTime = append(xTime, daysSinceStart)
+		ySpend = append(ySpend, dailySpend.Total)
+	}
+
+	poly := fit.PolynomialRegression(xTime, ySpend, nil, degree)
+
+	var forecast []DailySpend
+	lastDay := dailySpends[len(dailySpends)-1].Date
+	lastDayIndex := lastDay.Sub(startDate).Hours() / 24
+
+	for i := 1; i <= forecastDays; i++ {
+		futureDayIndex := lastDayIndex + float64(i)
+
+		predictedSpend := poly.F(futureDayIndex)
+
+		if predictedSpend < 0 {
+			predictedSpend = 0
+		}
+
+		forecast = append(forecast, DailySpend{
+			Date:  lastDay.AddDate(0, 0, i),
+			Total: predictedSpend,
+		})
+	}
+
+	return forecast
+}
+
+func GetLinearForecast(dailySpends []DailySpend, forecastDays int) []DailySpend {
 	if len(dailySpends) < 2 {
-		return nil // Not enough data to make a forecast
+		return nil // not enough data to make a forecast
 	}
 
 	var xTime, ySpend []float64
@@ -65,7 +104,7 @@ func GetForecast(dailySpends []DailySpend, forecastDays int) []DailySpend {
 		predictedSpend := alpha + beta*futureDayIndex
 
 		if predictedSpend < 0 {
-			predictedSpend = 0 // No negative spend
+			predictedSpend = 0 // no negative spend
 		}
 
 		forecast = append(forecast, DailySpend{

@@ -5,6 +5,7 @@ go 1.24.4
 require (
 	cloud.google.com/go/firestore v1.18.0
 	firebase.google.com/go/v4 v4.18.0
+	github.com/aclements/go-moremath v0.0.0-20241023150245-c8bbc672ef66
 	github.com/gorilla/mux v1.8.1
 	github.com/joho/godotenv v1.5.1
 	github.com/rs/cors v1.11.1

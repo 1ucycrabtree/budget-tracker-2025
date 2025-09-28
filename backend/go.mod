@@ -10,6 +10,7 @@ require (
 	github.com/rs/cors v1.11.1
 	github.com/swaggo/http-swagger v1.3.4
 	github.com/swaggo/swag v1.16.6
+	gonum.org/v1/gonum v0.16.0
 	google.golang.org/api v0.249.0
 	google.golang.org/grpc v1.75.1
 )

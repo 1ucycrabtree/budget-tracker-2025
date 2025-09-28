@@ -23,8 +23,8 @@ func (deps *RouterDeps) ForecastHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	dailySpends := analytics.PrepareForecastData(transactions)
-	forecast := analytics.GetPolynomialForecast(dailySpends, 30, 3) // forecast for the next 30 days using a cubic polynomial
+	dailySpends := analytics.PreparedEnhancedForecastData(transactions)
+	forecast := analytics.GetHoltWintersForecast(dailySpends, len(dailySpends), 30) // forecast for the next 30 days using Holt-Winters
 
 	if forecast == nil {
 		http.Error(w, "Not enough data to generate a forecast", http.StatusBadRequest)

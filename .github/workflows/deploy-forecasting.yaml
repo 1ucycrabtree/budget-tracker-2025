@@ -1,4 +1,4 @@
-name: deploy-backend
+name: deploy-forecasting
 permissions:
   contents: read
 
@@ -6,7 +6,6 @@ on:
   push:
     branches:
       - main
-      - feat/**
     paths:
       - "forecasting/**"
       - ".github/workflows/deploy-forecasting.yaml"

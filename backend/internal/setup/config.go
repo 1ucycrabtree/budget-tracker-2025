@@ -23,7 +23,7 @@ func LoadConfig() *AppConfig {
 		fmt.Println("No .env file found, using environment variables")
 	}
 
-	vercelPattern := `^https://budget-tracker-2025-git-.*-lc2353s-projects\.vercel\.app$`
+	vercelPattern := `^https://budget-tracker-2025-.*-lc2353s-projects\.vercel\.app$`
 
 	cfg := &AppConfig{
 		ProjectID:            getEnv("GCP_PROJECT_ID", ""),

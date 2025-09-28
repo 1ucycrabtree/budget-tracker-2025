@@ -65,7 +65,7 @@ func NewRouter(repo db.Repository, cfg *config.AppConfig) http.Handler {
 	r.Handle("/categories/{id}", RequireUserIDMiddleware(http.HandlerFunc(deps.DeleteCategoryHandler))).Methods("DELETE")
 
 	// Analytics handlers (require user-id)
-	r.Handle("/analytics/forecast", RequireUserIDMiddleware(http.HandlerFunc(deps.ForecastHandler))).Methods("GET")
+	r.Handle("/forecast/monthly", RequireUserIDMiddleware(http.HandlerFunc(deps.ForecastMonthlyHandler))).Methods("GET")
 	c := cors.New(cors.Options{
 		AllowedOrigins:   cfg.CorsAllowedOrigins,
 		AllowedMethods:   []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},

@@ -86,6 +86,15 @@ jobs:
           env_vars: |
             GCP_PROJECT_ID=${{ env.GCP_PROJECT_ID }}
             ENVIRONMENT=staging
+            FORECASTING_SERVICE_URL=https://${{ secrets.CLOUD_RUN_SERVICE_NAME_FORECASTING_STAGING }}.${{ env.GCP_REGION }}.run.app
+          flags: --service-account=${{ secrets.BACKEND_SERVICE_ACCOUNT }}
+
+      - name: Allow backend to invoke forecasting service (staging)
+        run: |
+          gcloud run services add-iam-policy-binding ${{ secrets.CLOUD_RUN_SERVICE_NAME_FORECASTING_STAGING }} \
+            --member="serviceAccount:${{ secrets.BACKEND_SERVICE_ACCOUNT }}" \
+            --role="roles/run.invoker" \
+            --region=${{ env.GCP_REGION }}
 
   ###########################
   # PRODUCTION DEPLOYMENT JOB
@@ -141,3 +150,12 @@ jobs:
           env_vars: |
             GCP_PROJECT_ID=${{ env.GCP_PROJECT_ID }}
             ENVIRONMENT=production
+            FORECASTING_SERVICE_URL=https://${{ secrets.CLOUD_RUN_SERVICE_NAME_FORECASTING }}.${{ env.GCP_REGION }}.run.app
+          flags: --service-account=${{ secrets.BACKEND_SERVICE_ACCOUNT }}
+
+      - name: Allow backend to invoke forecasting service
+        run: |
+          gcloud run services add-iam-policy-binding ${{ secrets.CLOUD_RUN_SERVICE_NAME_FORECASTING }} \
+            --member="serviceAccount:${{ secrets.BACKEND_SERVICE_ACCOUNT }}" \
+            --role="roles/run.invoker" \
+            --region=${{ env.GCP_REGION }}

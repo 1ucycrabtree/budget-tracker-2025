@@ -30,6 +30,7 @@ env:
   GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   GCP_REGION: ${{ secrets.GCP_REGION }}
   ARTIFACT_REGISTRY_REPO: ${{ secrets.ARTIFACT_REGISTRY_REPO }}
+  FORECASTING_SERVICE_ACCOUNT: ${{ secrets.CLOUD_RUN_SERVICE_NAME_FORECASTING }}
 
 ###########################
 # STAGING DEPLOYMENT JOB
@@ -86,12 +87,12 @@ jobs:
           env_vars: |
             GCP_PROJECT_ID=${{ env.GCP_PROJECT_ID }}
             ENVIRONMENT=staging
-            FORECASTING_SERVICE_URL=https://${{ secrets.CLOUD_RUN_SERVICE_NAME_FORECASTING_STAGING }}.${{ env.GCP_REGION }}.run.app
+            FORECASTING_SERVICE_URL=https://${{ env.FORECASTING_SERVICE_ACCOUNT }}.${{ env.GCP_REGION }}.run.app
           flags: --service-account=${{ secrets.BACKEND_SERVICE_ACCOUNT }}
 
       - name: Allow backend to invoke forecasting service (staging)
         run: |
-          gcloud run services add-iam-policy-binding ${{ secrets.CLOUD_RUN_SERVICE_NAME_FORECASTING_STAGING }} \
+          gcloud run services add-iam-policy-binding ${{ env.FORECASTING_SERVICE_ACCOUNT}} \
             --member="serviceAccount:${{ secrets.BACKEND_SERVICE_ACCOUNT }}" \
             --role="roles/run.invoker" \
             --region=${{ env.GCP_REGION }}
@@ -150,12 +151,12 @@ jobs:
           env_vars: |
             GCP_PROJECT_ID=${{ env.GCP_PROJECT_ID }}
             ENVIRONMENT=production
-            FORECASTING_SERVICE_URL=https://${{ secrets.CLOUD_RUN_SERVICE_NAME_FORECASTING }}.${{ env.GCP_REGION }}.run.app
+            FORECASTING_SERVICE_URL=https://${{ env.FORECASTING_SERVICE_ACCOUNT }}.${{ env.GCP_REGION }}.run.app
           flags: --service-account=${{ secrets.BACKEND_SERVICE_ACCOUNT }}
 
       - name: Allow backend to invoke forecasting service
         run: |
-          gcloud run services add-iam-policy-binding ${{ secrets.CLOUD_RUN_SERVICE_NAME_FORECASTING }} \
+          gcloud run services add-iam-policy-binding ${{ env.FORECASTING_SERVICE_ACCOUNT }} \
             --member="serviceAccount:${{ secrets.BACKEND_SERVICE_ACCOUNT }}" \
             --role="roles/run.invoker" \
             --region=${{ env.GCP_REGION }}

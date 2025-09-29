@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Edit2, Trash2, Check, X, Upload } from 'lucide-react';
 import type { Transaction } from '../models/transaction';
 import { formatDate, formatAmount } from '../utils/format';
@@ -20,10 +20,9 @@ const TransactionRow: React.FC<{
   categories: Category[];
   onUpdate: (id: string, updates: Partial<Transaction>) => void;
   onDelete: (id: string) => void;
-  isHovered: boolean;
-  onHover: () => void;
-  onUnhover: () => void;
-}> = ({ transaction, categories, onUpdate, onDelete, isHovered, onHover, onUnhover }) => {
+  hoveredCell: { col: string; id: string | null };
+  setHoveredCell: (cell: { col: string; id: string | null }) => void;
+}> = ({ transaction, categories, onUpdate, onDelete, hoveredCell, setHoveredCell }) => {
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [isEditingCategory, setIsEditingCategory] = useState(false);
   const [editDescription, setEditDescription] = useState(transaction.description);
@@ -71,11 +70,16 @@ const TransactionRow: React.FC<{
   };
 
   return (
-    <tr className="hover:bg-gray-50 group" onMouseEnter={onHover} onMouseLeave={onUnhover}>
+    <tr className="hover:bg-gray-50 group">
       <td className="border border-gray-300 px-4 py-2">
         {formatDate(transaction.transactionDateTime)}
       </td>
-      <td className="border border-gray-300 px-4 py-2">
+      {/* Description cell */}
+      <td
+        className="border border-gray-300 px-4 py-2 relative"
+        onMouseEnter={() => setHoveredCell({ col: 'description', id: transaction.id || null })}
+        onMouseLeave={() => setHoveredCell({ col: '', id: null })}
+      >
         {isEditingDescription ? (
           <div className="flex items-center gap-2">
             <input
@@ -104,7 +108,7 @@ const TransactionRow: React.FC<{
         ) : (
           <div className="flex items-center gap-2 group">
             <span className="text-sm flex-1">{transaction.description}</span>
-            {isHovered && (
+            {hoveredCell.col === 'description' && hoveredCell.id === transaction.id && (
               <button
                 onClick={() => setIsEditingDescription(true)}
                 className="p-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded transition-opacity"
@@ -116,7 +120,12 @@ const TransactionRow: React.FC<{
           </div>
         )}
       </td>
-      <td className="border border-gray-300 px-4 py-2">
+      {/* Category cell */}
+      <td
+        className="border border-gray-300 px-4 py-2 relative"
+        onMouseEnter={() => setHoveredCell({ col: 'category', id: transaction.id || null })}
+        onMouseLeave={() => setHoveredCell({ col: '', id: null })}
+      >
         {isEditingCategory ? (
           <div className="flex items-center gap-2">
             {!isAddingCategory ? (
@@ -196,7 +205,7 @@ const TransactionRow: React.FC<{
             >
               {transaction.category || 'Uncategorized'}
             </span>
-            {isHovered && (
+            {hoveredCell.col === 'category' && hoveredCell.id === transaction.id && (
               <button
                 onClick={() => setIsEditingCategory(true)}
                 className="p-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded transition-opacity"
@@ -208,6 +217,7 @@ const TransactionRow: React.FC<{
           </div>
         )}
       </td>
+      {/* Amount cell */}
       <td className="border border-gray-300 px-4 py-2 text-right">
         <span
           className={`font-medium ${transaction.amount >= 0 ? 'text-green-600' : 'text-red-600'}`}
@@ -215,22 +225,28 @@ const TransactionRow: React.FC<{
           {formatAmount(transaction.amount)}
         </span>
       </td>
-      <td className="border border-gray-300 px-4 py-2 text-center">
-        <button
-          onClick={() => setShowDeleteConfirm(true)}
-          className="p-1 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
-          title="Delete transaction"
-        >
-          <Trash2 size={16} />
-        </button>
-      </td>
-      {showDeleteConfirm && (
-        <td
-          colSpan={5}
-          className="absolute inset-0 bg-white border-2 border-red-200 rounded-lg shadow-lg z-10"
-        >
-          <div className="flex items-center justify-center h-full p-4">
-            <div className="text-center">
+      {/* Delete cell */}
+      <td
+        className="border border-gray-300 px-4 py-2 text-center relative"
+        onMouseEnter={() => setHoveredCell({ col: 'delete', id: transaction.id || null })}
+        onMouseLeave={() => setHoveredCell({ col: '', id: null })}
+      >
+        <div className="inline-block">
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            className="p-1 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+            title="Delete transaction"
+            style={{
+              visibility:
+                hoveredCell.col === 'delete' && hoveredCell.id === transaction.id
+                  ? 'visible'
+                  : 'hidden',
+            }}
+          >
+            <Trash2 size={16} />
+          </button>
+          {showDeleteConfirm && (
+            <div className="absolute z-20 left-1/2 top-full mt-2 -translate-x-1/2 bg-white border border-red-200 rounded-lg shadow-lg p-4 w-56">
               <p className="text-sm text-gray-700 mb-3">
                 Are you sure you want to delete this transaction?
               </p>
@@ -252,9 +268,9 @@ const TransactionRow: React.FC<{
                 </button>
               </div>
             </div>
-          </div>
-        </td>
-      )}
+          )}
+        </div>
+      </td>
     </tr>
   );
 };
@@ -265,45 +281,33 @@ export const TransactionList: React.FC<Props> = ({
   onUpdateTransaction,
   onDeleteTransaction,
 }) => {
-  const [transactions, setTransactions] = useState<Transaction[]>(propTransactions);
-  const [categories, setCategories] = useState<Category[]>(propCategories);
-  const [hoveredRow, setHoveredRow] = useState<string | null>(null);
-  // Paging state
+  const [hoveredCell, setHoveredCell] = useState<{ col: string; id: string | null }>({
+    col: '',
+    id: null,
+  });
   const [page, setPage] = useState(1);
   const pageSize = 20;
 
-  React.useEffect(() => {
-    setTransactions(propTransactions);
-  }, [propTransactions]);
-  React.useEffect(() => {
-    setCategories(propCategories);
-  }, [propCategories]);
-
-  const sortedTransactions = useMemo(() => {
-    return [...transactions].sort((a, b) => {
-      return new Date(b.transactionDateTime).getTime() - new Date(a.transactionDateTime).getTime();
-    });
-  }, [transactions]);
-
-  // Paging logic
+  // Always sort and page from props
+  const sortedTransactions = [...propTransactions].sort((a, b) => {
+    return new Date(b.transactionDateTime).getTime() - new Date(a.transactionDateTime).getTime();
+  });
   const totalPages = Math.ceil(sortedTransactions.length / pageSize);
   const pagedTransactions = sortedTransactions.slice((page - 1) * pageSize, page * pageSize);
 
   const handleUpdateTransaction = (id: string, updates: Partial<Transaction>) => {
-    setTransactions((prev) => prev.map((t) => (t.id === id ? { ...t, ...updates } : t)));
     if (onUpdateTransaction) {
       onUpdateTransaction(id, updates);
     }
   };
 
   const handleDeleteTransaction = (id: string) => {
-    setTransactions((prev) => prev.filter((t) => t.id !== id));
     if (onDeleteTransaction) {
       onDeleteTransaction(id);
     }
   };
 
-  if (transactions.length === 0) {
+  if (propTransactions.length === 0) {
     return (
       <div className="my-6 mx-4 p-6 text-center text-gray-500 bg-gray-50 rounded-lg border border-gray-200 shadow-sm">
         <div className="mb-6">
@@ -331,12 +335,11 @@ export const TransactionList: React.FC<Props> = ({
             <TransactionRow
               key={t.id || `${t.transactionDateTime}-${t.amount}`}
               transaction={t}
-              categories={categories}
+              categories={propCategories}
               onUpdate={handleUpdateTransaction}
               onDelete={handleDeleteTransaction}
-              isHovered={hoveredRow === (t.id || `${t.transactionDateTime}-${t.amount}`)}
-              onHover={() => setHoveredRow(t.id || `${t.transactionDateTime}-${t.amount}`)}
-              onUnhover={() => setHoveredRow(null)}
+              hoveredCell={hoveredCell}
+              setHoveredCell={setHoveredCell}
             />
           ))}
         </tbody>

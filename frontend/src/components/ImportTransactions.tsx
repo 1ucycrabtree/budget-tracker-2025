@@ -3,7 +3,6 @@ import { formatAmount, formatDate } from '../utils/format';
 import type { Transaction } from '../models/transaction';
 
 type ImportTransactionsProps = {
-  userId: string;
   onImportComplete: () => void;
 };
 
@@ -103,7 +102,7 @@ const ImportPreviewModal: React.FC<ImportPreviewModalProps> = ({
   );
 };
 
-const ImportTransactions: React.FC<ImportTransactionsProps> = ({ userId, onImportComplete }) => {
+const ImportTransactions: React.FC<ImportTransactionsProps> = ({ onImportComplete }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showImportPreview, setShowImportPreview] = useState(false);
   const [importPreviewData, setImportPreviewData] = useState<Transaction[]>([]);
@@ -114,10 +113,6 @@ const ImportTransactions: React.FC<ImportTransactionsProps> = ({ userId, onImpor
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     setError(null);
-    if (!userId) {
-      setError('User ID is undefined');
-      return;
-    }
     if (file) {
       // TODO: Parse CSV and preview transactions here. For now, using mock data.
       const mockImportData: Transaction[] = [

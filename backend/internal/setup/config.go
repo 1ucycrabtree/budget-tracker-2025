@@ -28,6 +28,8 @@ func LoadConfig() *AppConfig {
 		Environment:          getEnv("ENVIRONMENT", "development"),
 	}
 
+	fmt.Printf("Loaded config: ProjectID=%s, LocalCredentialsPath=%s, Environment=%s\n", cfg.ProjectID, cfg.LocalCredentialsPath, cfg.Environment)
+
 	if cfg.ProjectID == "" {
 		log.Fatal("Project ID is not set in the environment variables or .env file")
 	}

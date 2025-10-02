@@ -1,6 +1,6 @@
 export async function setupUserProfile(user: { uid: string; email: string }) {
   try {
-    const response = await fetch(`/setupUserProfile`, {
+    const response = await fetch(`/api/setupUserProfile`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

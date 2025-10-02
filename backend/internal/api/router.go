@@ -25,6 +25,10 @@ type RouterDeps struct {
 	Config *config.AppConfig
 }
 
+type contextKey string
+
+const userIDKey contextKey = "userID"
+
 func FirebaseAuthMiddleware(client *auth.Client) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -39,7 +43,7 @@ func FirebaseAuthMiddleware(client *auth.Client) func(http.Handler) http.Handler
 				http.Error(w, "Invalid token", http.StatusUnauthorized)
 				return
 			}
-			ctx := context.WithValue(r.Context(), "userID", token.UID)
+			ctx := context.WithValue(r.Context(), userIDKey, token.UID)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}

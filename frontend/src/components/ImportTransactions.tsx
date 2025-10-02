@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { formatAmount, formatDate } from '../utils/format';
 import type { Transaction } from '../models/transaction';
+import { importTransactions } from '../api/transactions';
 
 type ImportTransactionsProps = {
   onImportComplete: () => void;
@@ -109,12 +110,11 @@ const ImportTransactions: React.FC<ImportTransactionsProps> = ({ onImportComplet
   const [isImporting, setIsImporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Handle file selection and preview
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     setError(null);
     if (file) {
-      // TODO: Parse CSV and preview transactions here. For now, using mock data.
+      // TODO: Parse CSV and preview transactions here. Maybe just preview first page (20 items)?
       const mockImportData: Transaction[] = [
         {
           description: 'Coffee Shop',
@@ -139,15 +139,13 @@ const ImportTransactions: React.FC<ImportTransactionsProps> = ({ onImportComplet
     }
   };
 
-  // Handle import confirmation
   const handleImportConfirm = async () => {
     setIsImporting(true);
     setError(null);
     try {
-      // In real usage, send the file to backend for import
-      // Here, just simulate import
       setShowImportPreview(false);
       setImportPreviewData([]);
+      await importTransactions(importPreviewData as unknown as File);
       onImportComplete();
     } catch (error) {
       if (error instanceof Error) {

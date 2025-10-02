@@ -1,12 +1,13 @@
 package db
 
 import (
-	"cloud.google.com/go/firestore"
 	"context"
-	firebase "firebase.google.com/go/v4"
 	"fmt"
-	"google.golang.org/api/option"
 	"log"
+
+	"cloud.google.com/go/firestore"
+	firebase "firebase.google.com/go/v4"
+	"google.golang.org/api/option"
 )
 
 func NewFirestoreClient(ctx context.Context, projectID, credentialsPath, env string) (*firestore.Client, error) {
@@ -14,9 +15,8 @@ func NewFirestoreClient(ctx context.Context, projectID, credentialsPath, env str
 
 	if env == "development" && credentialsPath != "" {
 		opts = append(opts, option.WithCredentialsFile(credentialsPath))
-	} else {
-		opts = append(opts, option.WithoutAuthentication())
 	}
+
 	log.Printf("Running in %s environment", env)
 
 	conf := &firebase.Config{ProjectID: projectID}

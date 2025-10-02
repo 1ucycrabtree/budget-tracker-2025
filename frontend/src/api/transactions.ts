@@ -1,9 +1,13 @@
 import type { Transaction } from '../models/transaction';
+import { getAuth } from 'firebase/auth';
 
-export async function getTransactions(userId: string): Promise<Transaction[]> {
+export async function getTransactions(): Promise<Transaction[]> {
   try {
+    const user = getAuth().currentUser;
+    if (!user) throw new Error('Not authenticated');
+    const idToken = await user.getIdToken();
     const res = await fetch(`/api/transactions`, {
-      headers: { 'User-Id': userId },
+      headers: { Authorization: `Bearer ${idToken}` },
     });
     if (!res.ok) throw new Error('Network response was not ok');
     return (await res.json()) as Transaction[];
@@ -13,13 +17,16 @@ export async function getTransactions(userId: string): Promise<Transaction[]> {
   }
 }
 
-export async function addTransaction(transaction: Transaction, userId: string) {
+export async function addTransaction(transaction: Transaction) {
   try {
+    const user = getAuth().currentUser;
+    if (!user) throw new Error('Not authenticated');
+    const idToken = await user.getIdToken();
     const res = await fetch(`/api/transactions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'User-Id': userId,
+        Authorization: `Bearer ${idToken}`,
       },
       body: JSON.stringify(transaction),
     });
@@ -31,14 +38,17 @@ export async function addTransaction(transaction: Transaction, userId: string) {
   }
 }
 
-export async function importTransactions(file: File, userId: string): Promise<Transaction[]> {
+export async function importTransactions(file: File): Promise<Transaction[]> {
+  const user = getAuth().currentUser;
+  if (!user) throw new Error('Not authenticated');
+  const idToken = await user.getIdToken();
   const formData = new FormData();
   formData.append('file', file);
 
   const res = await fetch(`/api/transactions/import`, {
     method: 'POST',
     headers: {
-      'User-Id': userId,
+      Authorization: `Bearer ${idToken}`,
     },
     body: formData,
   });

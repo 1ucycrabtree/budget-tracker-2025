@@ -2,16 +2,21 @@ package api
 
 import (
 	"context"
+	"encoding/csv"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
 
 	"backend/internal/categoriser"
+	"backend/internal/db"
 	"backend/internal/exceptions"
 	"backend/internal/models"
 )
@@ -37,7 +42,7 @@ func (deps *RouterDeps) CreateTransactionHandler(w http.ResponseWriter, r *http.
 		return
 	}
 
-	userID := r.Header.Get("user-id")
+	userID := r.Context().Value("userID").(string)
 
 	transaction.UserID = userID
 	transaction.InsertedAt = time.Now()
@@ -84,7 +89,7 @@ func (deps *RouterDeps) GetTransactionByIDHandler(w http.ResponseWriter, r *http
 		return
 	}
 
-	userID := r.Header.Get("user-id")
+	userID := r.Context().Value("userID").(string)
 
 	transaction, err := deps.Repo.GetTransactionByID(context.Background(), userID, transactionID)
 	if err != nil {
@@ -97,7 +102,7 @@ func (deps *RouterDeps) GetTransactionByIDHandler(w http.ResponseWriter, r *http
 		var notFoundErr *exceptions.TransactionNotFoundError
 		if errors.As(err, &notFoundErr) {
 			log.Print(exceptions.TransactionNotFound(transactionID))
-			http.Error(w, "transaction not found", http.StatusNotFound)
+			http.Error(w, "Transaction not found", http.StatusNotFound)
 			return
 		}
 		log.Printf("Error getting transaction: %v", err)
@@ -129,7 +134,7 @@ func (deps *RouterDeps) ListTransactionsHandler(w http.ResponseWriter, r *http.R
 		}
 	}
 
-	userID := r.Header.Get("user-id")
+	userID := r.Context().Value("userID").(string)
 
 	transactions, err := deps.Repo.ListTransactions(context.Background(), userID, filters)
 	if err != nil {
@@ -162,7 +167,7 @@ func (deps *RouterDeps) BulkAddTransactionsHandler(w http.ResponseWriter, r *htt
 		return
 	}
 
-	userID := r.Header.Get("user-id")
+	userID := r.Context().Value("userID").(string)
 
 	for i := range transactions {
 		transactions[i].UserID = userID
@@ -205,7 +210,7 @@ func (deps *RouterDeps) UpdateTransactionHandler(w http.ResponseWriter, r *http.
 		return
 	}
 
-	userID := r.Header.Get("user-id")
+	userID := r.Context().Value("userID").(string)
 
 	var updateData models.TransactionUpdate
 	if err := json.NewDecoder(r.Body).Decode(&updateData); err != nil {
@@ -258,7 +263,7 @@ func (deps *RouterDeps) DeleteTransactionHandler(w http.ResponseWriter, r *http.
 		return
 	}
 
-	userID := r.Header.Get("user-id")
+	userID := r.Context().Value("userID").(string)
 
 	if err := deps.Repo.DeleteTransaction(context.Background(), userID, transactionID); err != nil {
 		var forbiddenErr *exceptions.UserForbiddenError
@@ -279,4 +284,104 @@ func (deps *RouterDeps) DeleteTransactionHandler(w http.ResponseWriter, r *http.
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+// ImportTransactionsHandler godoc
+// @Summary Import transactions from CSV
+// @Description Import transactions for the authenticated user from a CSV file
+// @Tags import
+// @Accept multipart/form-data
+// @Produce json
+// @Param user-id header string true "User ID"
+// @Param file formData file true "CSV file"
+// @Success 200 {array} models.Transaction
+// @Failure 400 {string} string "Failed to read file"
+// @Failure 401 {string} string "Unauthorized"
+// @Failure 500 {string} string "Failed to parse csv or save transactions"
+// @Router /transactions/import [post]
+// @Security ApiKeyAuth
+func (deps *RouterDeps) ImportTransactionsHandler(w http.ResponseWriter, r *http.Request) {
+	file, _, err := r.FormFile("file")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to read file: %v", err), http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	userID := r.Context().Value("userID").(string)
+
+	transactions, err := ParseCSV(r.Context(), deps.Repo, file, userID)
+	if err != nil {
+		http.Error(w, "Failed to parse csv", http.StatusInternalServerError)
+		return
+	}
+
+	transactions, err = deps.Repo.BulkAddTransactions(context.Background(), transactions)
+	if err != nil {
+		http.Error(w, "Failed to save transactions", http.StatusInternalServerError)
+		return
+	}
+
+	EncodeJSONResponse(w, transactions)
+}
+func ParseCSV(ctx context.Context, repo db.Repository, r io.Reader, userID string) ([]models.Transaction, error) {
+	var transactions []models.Transaction
+	csvReader := csv.NewReader(r)
+	csvReader.FieldsPerRecord = -1
+
+	records, err := csvReader.ReadAll()
+	if err != nil {
+		return []models.Transaction{}, nil
+	}
+
+	for i, record := range records {
+		if i == 0 {
+			continue
+		}
+
+		if len(record) < 6 {
+			continue
+		}
+
+		date, err := time.Parse("02/01/2006", record[1])
+		if err != nil {
+			continue
+		}
+
+		amountFloat, err := strconv.ParseFloat(record[3], 64)
+		if err != nil {
+			continue
+		}
+		amount := int32(amountFloat * 100)
+		category, err := categoriser.CategoriseTransaction(ctx, repo, userID, record[5], "")
+		if err != nil {
+			category = "Other"
+		}
+
+		t := models.Transaction{
+			UserID:              userID,
+			TransactionDateTime: date,
+			Description:         strings.TrimSpace(record[5]),
+			Amount:              amount,
+			Category:            category,
+			Type:                detectType(amount),
+			BankReference:       strings.TrimSpace(record[2]),
+			InsertedAt:          time.Now(),
+			UpdatedAt:           time.Now(),
+		}
+		transactions = append(transactions, t)
+	}
+
+	return transactions, nil
+}
+
+func detectType(amount int32) string {
+	switch {
+	case amount < 0:
+		return "Debit"
+	case amount > 0:
+		return "Credit"
+	default:
+		return "-" // shouldn't have zero amounts
+	}
 }

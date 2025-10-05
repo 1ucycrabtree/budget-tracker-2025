@@ -2,6 +2,39 @@ import type { Transaction } from '../models/transaction';
 import { getAuth } from 'firebase/auth';
 
 export async function getTransactions(): Promise<Transaction[]> {
+  if (process.env.NODE_ENV === 'development') {
+    return [
+      {
+        id: '1',
+        amount: -5510,
+        transactionDateTime: '2024-06-01',
+        description: 'Groceries',
+        category: 'Food',
+      },
+      {
+        id: '2',
+        amount: -12000,
+        transactionDateTime: '2024-06-03',
+        description: 'Yorkshire Water',
+        category: 'Bills',
+      },
+      {
+        id: '3',
+        amount: -850,
+        transactionDateTime: '2024-06-03',
+        description: 'Drinks at The Heist',
+        category: 'Going Out',
+      },
+
+      {
+        id: '4',
+        amount: 90000,
+        transactionDateTime: '2024-06-02',
+        description: 'June Paycheck',
+        category: 'Income',
+      },
+    ] as Transaction[];
+  }
   try {
     const user = getAuth().currentUser;
     if (!user) throw new Error('Not authenticated');

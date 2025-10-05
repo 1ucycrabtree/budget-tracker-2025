@@ -42,7 +42,7 @@ func (deps *RouterDeps) CreateTransactionHandler(w http.ResponseWriter, r *http.
 		return
 	}
 
-	userID := r.Context().Value("userID").(string)
+	userID := r.Context().Value(userIDKey).(string)
 
 	transaction.UserID = userID
 	transaction.InsertedAt = time.Now()
@@ -89,7 +89,7 @@ func (deps *RouterDeps) GetTransactionByIDHandler(w http.ResponseWriter, r *http
 		return
 	}
 
-	userID := r.Context().Value("userID").(string)
+	userID := r.Context().Value(userIDKey).(string)
 
 	transaction, err := deps.Repo.GetTransactionByID(context.Background(), userID, transactionID)
 	if err != nil {
@@ -134,7 +134,7 @@ func (deps *RouterDeps) ListTransactionsHandler(w http.ResponseWriter, r *http.R
 		}
 	}
 
-	userID := r.Context().Value("userID").(string)
+	userID := r.Context().Value(userIDKey).(string)
 
 	transactions, err := deps.Repo.ListTransactions(context.Background(), userID, filters)
 	if err != nil {
@@ -167,7 +167,7 @@ func (deps *RouterDeps) BulkAddTransactionsHandler(w http.ResponseWriter, r *htt
 		return
 	}
 
-	userID := r.Context().Value("userID").(string)
+	userID := r.Context().Value(userIDKey).(string)
 
 	for i := range transactions {
 		transactions[i].UserID = userID
@@ -210,7 +210,7 @@ func (deps *RouterDeps) UpdateTransactionHandler(w http.ResponseWriter, r *http.
 		return
 	}
 
-	userID := r.Context().Value("userID").(string)
+	userID := r.Context().Value(userIDKey).(string)
 
 	var updateData models.TransactionUpdate
 	if err := json.NewDecoder(r.Body).Decode(&updateData); err != nil {
@@ -263,7 +263,7 @@ func (deps *RouterDeps) DeleteTransactionHandler(w http.ResponseWriter, r *http.
 		return
 	}
 
-	userID := r.Context().Value("userID").(string)
+	userID := r.Context().Value(userIDKey).(string)
 
 	if err := deps.Repo.DeleteTransaction(context.Background(), userID, transactionID); err != nil {
 		var forbiddenErr *exceptions.UserForbiddenError
@@ -308,7 +308,7 @@ func (deps *RouterDeps) ImportTransactionsHandler(w http.ResponseWriter, r *http
 	}
 	defer file.Close()
 
-	userID := r.Context().Value("userID").(string)
+	userID := r.Context().Value(userIDKey).(string)
 
 	transactions, err := ParseCSV(r.Context(), deps.Repo, file, userID)
 	if err != nil {

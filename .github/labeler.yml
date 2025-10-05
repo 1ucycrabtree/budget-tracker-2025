@@ -1,0 +1,86 @@
+feature:
+  - head-branch: ['^feature/.+', '^feat/.+']
+bug-fix:
+  - head-branch: ['^bug/.+', '^fix/.+']
+chore:
+  - head-branch: ['^chore/.+']
+
+go:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/*.go'
+      - 'go.mod'
+      - 'go.sum'
+      - 'backend/Dockerfile'
+
+typescript:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'frontend/**/*.ts'
+      - 'frontend/**/*.tsx'
+      - 'frontend/package.json'
+      - 'frontend/package-lock.json'
+      - 'frontend/vite.config.js'
+
+ui:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'frontend/src/components/**/*'
+      - 'frontend/src/styles/index.css'
+      - 'frontend/tailwind.config.js'
+      - 'frontend/index.html'
+
+api:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'backend/internal/api/**/*'
+      - 'frontend/src/api/**/*'
+      - 'frontend/vercel.json'
+      - 'frontend/hooks/**/*'
+
+
+database:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'backend/internal/db/**/*'
+
+docs:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'README.md'
+      - 'backend/docs/**/*'
+
+config:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'backend/.env.example'
+      - 'backend/.gitignore'
+      - 'frontend/.prettierrc'
+      - 'frontend/.gitignore'
+      - 'frontend/eslint.config.js'
+      - 'frontend/postcss.config.js'
+      - 'frontend/tsconfig.json'
+      - 'frontend/tsconfig.app.json'
+      - 'frontend/tsconfig.node.json'
+
+auth:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'frontend/src/components/AuthButtons.tsx'
+      - 'frontend/src/components/AuthForm.tsx'
+      - 'frontend/src/components/AuthPage.tsx'
+      - 'frontend/src/components/LoggedInView.tsx'
+      - 'frontend/src/context/**/*'
+      - 'frontend/src/hooks/useAuth.tsx'
+      - 'frontend/src/firebase.ts'
+      - 'backend/internal/api/user_handler.go'
+
+ci-cd:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '.github/workflows/*.yaml'
+      - '.github/workflows/*.yml'
+
+dependabot:
+  - changed-files:
+    - any-glob-to-any-file: '.github/dependabot.yml'

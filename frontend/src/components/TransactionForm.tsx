@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import type { Transaction } from '../models/transaction';
-
+import type { addTransactionRequest } from '../models/addTransactionRequest';
 interface Props {
-  onAdd: (t: Transaction) => void;
+  onAdd: (t: addTransactionRequest) => void;
 }
 
 export const TransactionForm: React.FC<Props> = ({ onAdd }) => {
@@ -15,7 +14,6 @@ export const TransactionForm: React.FC<Props> = ({ onAdd }) => {
       description,
       amount,
       category: '',
-      type: amount > 0 ? 'Credit' : 'Debit',
       transactionDateTime: new Date().toISOString(),
     });
     setDescription('');

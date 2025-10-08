@@ -88,6 +88,7 @@ export const TransactionList: React.FC<Props> = ({
     ));
   };
 
+  // TODO: fix add category
   const handleAddCategory = async () => {
     if (!newCategory.trim()) return;
     setIsAddingCategory(true);

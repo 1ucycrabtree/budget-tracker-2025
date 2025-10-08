@@ -42,6 +42,7 @@ export const TransactionList: React.FC<Props> = ({
   useEffect(() => {
     const fetchCategories = async () => {
       try {
+        // TODO: This is called too early when a user first signs up, so it fails
         const fetchedCategories = await getCategories();
         if (!Array.isArray(fetchedCategories)) {
           console.error('Fetched categories are not an array:', fetchedCategories);

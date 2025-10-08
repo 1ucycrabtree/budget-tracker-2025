@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Transaction } from '../models/transaction';
 import { getTransactions } from '../api/transactions';
-import { TransactionList } from '../components/transactionList';
+import { TransactionList } from '../components/TransactionList';
 import ImportTransactions from '../components/ImportTransactions';
 
 export default function Transactions() {
@@ -27,7 +27,7 @@ export default function Transactions() {
   return (
     <div>
       <ImportTransactions onImportComplete={refreshTransactions} />
-      <TransactionList transactions={transactions} />
+      <TransactionList transactions={transactions} refreshTransactions={refreshTransactions} />
     </div>
   );
 }

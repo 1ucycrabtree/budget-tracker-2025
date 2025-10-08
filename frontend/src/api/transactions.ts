@@ -92,3 +92,39 @@ export async function importTransactions(file: File): Promise<Transaction[]> {
 
   return (await res.json()) as Transaction[];
 }
+
+export async function deleteTransaction(id: string): Promise<void> {
+  try {
+    const user = getAuth().currentUser;
+    if (!user) throw new Error('Not authenticated');
+    const idToken = await user.getIdToken();
+    const res = await fetch(`/api/transactions/${id}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${idToken}`,
+      },
+    });
+    if (!res.ok) throw new Error('Network response was not ok');
+  } catch (err) {
+    console.error('Failed to delete transaction:', err);
+  }
+}
+
+export async function updateTransaction(transaction: Transaction): Promise<void> {
+  try {
+    const user = getAuth().currentUser;
+    if (!user) throw new Error('Not authenticated');
+    const idToken = await user.getIdToken();
+    const res = await fetch(`/api/transactions/${transaction.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${idToken}`,
+      },
+      body: JSON.stringify(transaction),
+    });
+    if (!res.ok) throw new Error('Network response was not ok');
+  } catch (err) {
+    console.error('Failed to update transaction:', err);
+  }
+}

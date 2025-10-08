@@ -1,6 +1,4 @@
-export interface Transaction {
-  id: string;
-  userId: string;
+export interface addTransactionRequest {
   description: string;
   amount: number;
   category: string;

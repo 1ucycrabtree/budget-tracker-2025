@@ -8,10 +8,12 @@ import (
 )
 
 type Repository interface {
+	SeedNewUser(ctx context.Context, userID string, userData map[string]interface{}) error
+
 	AddTransaction(ctx context.Context, userID string, transaction models.Transaction) (string, error)
 	GetTransactionByID(ctx context.Context, userID, transactionID string) (*models.Transaction, error)
 	ListTransactions(ctx context.Context, userID string, filters map[string]string) ([]models.Transaction, error)
-	BulkAddTransactions(ctx context.Context, transactions []models.Transaction) ([]models.Transaction, error)
+	BulkAddTransactions(ctx context.Context, userID string, transactions []models.Transaction) ([]models.Transaction, error)
 	UpdateTransaction(ctx context.Context, userID, transactionID string, updateData models.TransactionUpdate) (*models.Transaction, error)
 	DeleteTransaction(ctx context.Context, userID, transactionID string) error
 

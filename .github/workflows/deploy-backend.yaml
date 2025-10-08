@@ -91,7 +91,7 @@ jobs:
             --member="serviceAccount:${{ secrets.BACKEND_SERVICE_ACCOUNT }}" \
             --role="roles/run.invoker" \
             --region=${{ env.GCP_REGION }}
-
+          flags: --allow-unauthenticated
   ###########################
   # PRODUCTION DEPLOYMENT JOB
   ###########################
@@ -155,3 +155,4 @@ jobs:
             --member="serviceAccount:${{ secrets.BACKEND_SERVICE_ACCOUNT }}" \
             --role="roles/run.invoker" \
             --region=${{ env.GCP_REGION }}
+          flags: --allow-unauthenticated

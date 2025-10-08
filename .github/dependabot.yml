@@ -5,7 +5,20 @@
 
 version: 2
 updates:
+  # Go backend dependencies
   - package-ecosystem: "gomod"
-    directory: "backend/"
+    directory: "/backend/"
+    schedule:
+      interval: "weekly"
+
+  # Node.js frontend dependencies
+  - package-ecosystem: "npm"
+    directory: "/frontend/"
+    schedule:
+      interval: "weekly"
+
+  # Python forecasting dependencies
+  - package-ecosystem: "pip"
+    directory: "/forecasting/"
     schedule:
       interval: "weekly"

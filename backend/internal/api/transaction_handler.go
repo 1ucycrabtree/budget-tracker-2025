@@ -2,16 +2,21 @@ package api
 
 import (
 	"context"
+	"encoding/csv"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
 
 	"backend/internal/categoriser"
+	"backend/internal/db"
 	"backend/internal/exceptions"
 	"backend/internal/models"
 )
@@ -33,11 +38,11 @@ import (
 func (deps *RouterDeps) CreateTransactionHandler(w http.ResponseWriter, r *http.Request) {
 	var transaction models.Transaction
 	if err := json.NewDecoder(r.Body).Decode(&transaction); err != nil {
-		http.Error(w, fmt.Sprintf("Invalid request body: %v", err), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf(exceptions.InvalidRequestBodyMessage, err), http.StatusBadRequest)
 		return
 	}
 
-	userID := r.Header.Get("user-id")
+	userID := r.Context().Value(userIDKey).(string)
 
 	transaction.UserID = userID
 	transaction.InsertedAt = time.Now()
@@ -45,7 +50,7 @@ func (deps *RouterDeps) CreateTransactionHandler(w http.ResponseWriter, r *http.
 
 	category, err := categoriser.CategoriseTransaction(r.Context(), deps.Repo, userID, transaction.Description, transaction.Category)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to categorise transaction: %v", err), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf(exceptions.FailedToCategoriseMessage, err), http.StatusInternalServerError)
 		return
 	}
 	transaction.Category = category
@@ -53,7 +58,7 @@ func (deps *RouterDeps) CreateTransactionHandler(w http.ResponseWriter, r *http.
 	transactionID, err := deps.Repo.AddTransaction(context.Background(), userID, transaction)
 	if err != nil {
 		log.Printf("Error adding transaction to DB: %v", err)
-		http.Error(w, "Failed to create transaction", http.StatusInternalServerError)
+		http.Error(w, exceptions.FailedToCreateTransactionMessage, http.StatusInternalServerError)
 		return
 	}
 
@@ -80,11 +85,11 @@ func (deps *RouterDeps) GetTransactionByIDHandler(w http.ResponseWriter, r *http
 	vars := mux.Vars(r)
 	transactionID := vars["id"]
 	if transactionID == "" {
-		http.Error(w, "Missing transaction ID", http.StatusBadRequest)
+		http.Error(w, exceptions.MissingTransactionIDMessage, http.StatusBadRequest)
 		return
 	}
 
-	userID := r.Header.Get("user-id")
+	userID := r.Context().Value(userIDKey).(string)
 
 	transaction, err := deps.Repo.GetTransactionByID(context.Background(), userID, transactionID)
 	if err != nil {
@@ -97,16 +102,15 @@ func (deps *RouterDeps) GetTransactionByIDHandler(w http.ResponseWriter, r *http
 		var notFoundErr *exceptions.TransactionNotFoundError
 		if errors.As(err, &notFoundErr) {
 			log.Print(exceptions.TransactionNotFound(transactionID))
-			http.Error(w, "transaction not found", http.StatusNotFound)
+			http.Error(w, exceptions.TransactionNotFoundMessage, http.StatusNotFound)
 			return
 		}
 		log.Printf("Error getting transaction: %v", err)
-		http.Error(w, "Transaction not found", http.StatusNotFound)
+		http.Error(w, exceptions.TransactionNotFoundMessage, http.StatusNotFound)
 		return
 	}
 
 	EncodeJSONResponse(w, transaction)
-
 }
 
 // ListTransactionsHandler godoc
@@ -129,12 +133,12 @@ func (deps *RouterDeps) ListTransactionsHandler(w http.ResponseWriter, r *http.R
 		}
 	}
 
-	userID := r.Header.Get("user-id")
+	userID := r.Context().Value(userIDKey).(string)
 
 	transactions, err := deps.Repo.ListTransactions(context.Background(), userID, filters)
 	if err != nil {
 		log.Printf("Error listing transactions: %v", err)
-		http.Error(w, "Failed to list transactions", http.StatusInternalServerError)
+		http.Error(w, exceptions.FailedToListTransactionsMessage, http.StatusInternalServerError)
 		return
 	}
 
@@ -158,11 +162,11 @@ func (deps *RouterDeps) ListTransactionsHandler(w http.ResponseWriter, r *http.R
 func (deps *RouterDeps) BulkAddTransactionsHandler(w http.ResponseWriter, r *http.Request) {
 	var transactions []models.Transaction
 	if err := json.NewDecoder(r.Body).Decode(&transactions); err != nil {
-		http.Error(w, fmt.Sprintf("Invalid request body: %v", err), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf(exceptions.InvalidRequestBodyMessage, err), http.StatusBadRequest)
 		return
 	}
 
-	userID := r.Header.Get("user-id")
+	userID := r.Context().Value(userIDKey).(string)
 
 	for i := range transactions {
 		transactions[i].UserID = userID
@@ -170,10 +174,10 @@ func (deps *RouterDeps) BulkAddTransactionsHandler(w http.ResponseWriter, r *htt
 		transactions[i].UpdatedAt = time.Now()
 	}
 
-	transactions, err := deps.Repo.BulkAddTransactions(context.Background(), transactions)
+	transactions, err := deps.Repo.BulkAddTransactions(context.Background(), userID, transactions)
 	if err != nil {
 		log.Printf("Error bulk adding transactions: %v", err)
-		http.Error(w, "Failed to bulk add transactions", http.StatusInternalServerError)
+		http.Error(w, exceptions.FailedToBulkAddTransactionsMessage, http.StatusInternalServerError)
 		return
 	}
 
@@ -201,15 +205,15 @@ func (deps *RouterDeps) UpdateTransactionHandler(w http.ResponseWriter, r *http.
 	vars := mux.Vars(r)
 	transactionID := vars["id"]
 	if transactionID == "" {
-		http.Error(w, "Missing transaction ID", http.StatusBadRequest)
+		http.Error(w, exceptions.MissingTransactionIDMessage, http.StatusBadRequest)
 		return
 	}
 
-	userID := r.Header.Get("user-id")
+	userID := r.Context().Value(userIDKey).(string)
 
 	var updateData models.TransactionUpdate
 	if err := json.NewDecoder(r.Body).Decode(&updateData); err != nil {
-		http.Error(w, fmt.Sprintf("Invalid request body: %v", err), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf(exceptions.InvalidRequestBodyMessage, err), http.StatusBadRequest)
 		return
 	}
 
@@ -224,11 +228,11 @@ func (deps *RouterDeps) UpdateTransactionHandler(w http.ResponseWriter, r *http.
 		var notFoundErr *exceptions.TransactionNotFoundError
 		if errors.As(err, &notFoundErr) {
 			log.Print(exceptions.TransactionNotFound(transactionID))
-			http.Error(w, "transaction not found", http.StatusNotFound)
+			http.Error(w, exceptions.TransactionNotFoundMessage, http.StatusNotFound)
 			return
 		}
 		log.Printf("Error updating transaction: %v", err)
-		http.Error(w, "Failed to update transaction", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf(exceptions.FailedToUpdateTransactionMessage, transaction.ID), http.StatusInternalServerError)
 		return
 	}
 
@@ -254,11 +258,11 @@ func (deps *RouterDeps) DeleteTransactionHandler(w http.ResponseWriter, r *http.
 	vars := mux.Vars(r)
 	transactionID := vars["id"]
 	if transactionID == "" {
-		http.Error(w, "Missing transaction ID", http.StatusBadRequest)
+		http.Error(w, exceptions.MissingTransactionIDMessage, http.StatusBadRequest)
 		return
 	}
 
-	userID := r.Header.Get("user-id")
+	userID := r.Context().Value(userIDKey).(string)
 
 	if err := deps.Repo.DeleteTransaction(context.Background(), userID, transactionID); err != nil {
 		var forbiddenErr *exceptions.UserForbiddenError
@@ -270,13 +274,113 @@ func (deps *RouterDeps) DeleteTransactionHandler(w http.ResponseWriter, r *http.
 		var notFoundErr *exceptions.TransactionNotFoundError
 		if errors.As(err, &notFoundErr) {
 			log.Print(exceptions.TransactionNotFound(transactionID))
-			http.Error(w, "transaction not found", http.StatusNotFound)
+			http.Error(w, exceptions.TransactionNotFoundMessage, http.StatusNotFound)
 			return
 		}
 		log.Printf("Error deleting transaction: %v", err)
-		http.Error(w, "Failed to delete transaction", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf(exceptions.FailedToDeleteTransactionMessage, transactionID), http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+// ImportTransactionsHandler godoc
+// @Summary Import transactions from CSV
+// @Description Import transactions for the authenticated user from a CSV file
+// @Tags import
+// @Accept multipart/form-data
+// @Produce json
+// @Param user-id header string true "User ID"
+// @Param file formData file true "CSV file"
+// @Success 200 {array} models.Transaction
+// @Failure 400 {string} string "Failed to read file"
+// @Failure 401 {string} string "Unauthorized"
+// @Failure 500 {string} string "Failed to parse csv or save transactions"
+// @Router /transactions/import [post]
+// @Security ApiKeyAuth
+func (deps *RouterDeps) ImportTransactionsHandler(w http.ResponseWriter, r *http.Request) {
+	file, _, err := r.FormFile("file")
+	if err != nil {
+		http.Error(w, fmt.Sprintf(exceptions.FailedToReadMessage, err), http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	userID := r.Context().Value(userIDKey).(string)
+
+	transactions, err := ParseCSV(r.Context(), deps.Repo, file, userID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf(exceptions.FailedToReadMessage, err), http.StatusInternalServerError)
+		return
+	}
+
+	transactions, err = deps.Repo.BulkAddTransactions(context.Background(), userID, transactions)
+	if err != nil {
+		http.Error(w, exceptions.FailedToBulkAddTransactionsMessage, http.StatusInternalServerError)
+		return
+	}
+
+	EncodeJSONResponse(w, transactions)
+}
+func ParseCSV(ctx context.Context, repo db.Repository, r io.Reader, userID string) ([]models.Transaction, error) {
+	var transactions []models.Transaction
+	csvReader := csv.NewReader(r)
+	csvReader.FieldsPerRecord = -1
+
+	records, err := csvReader.ReadAll()
+	if err != nil {
+		return []models.Transaction{}, nil
+	}
+
+	for i, record := range records {
+		if i == 0 {
+			continue
+		}
+
+		if len(record) < 6 {
+			continue
+		}
+
+		date, err := time.Parse("02/01/2006", record[1])
+		if err != nil {
+			continue
+		}
+
+		amountFloat, err := strconv.ParseFloat(record[3], 64)
+		if err != nil {
+			continue
+		}
+		amount := int32(amountFloat * 100)
+		category, err := categoriser.CategoriseTransaction(ctx, repo, userID, record[5], "")
+		if err != nil {
+			category = "Other"
+		}
+
+		t := models.Transaction{
+			UserID:              userID,
+			TransactionDateTime: date,
+			Description:         strings.TrimSpace(record[5]),
+			Amount:              amount,
+			Category:            category,
+			Type:                detectType(amount),
+			BankReference:       strings.TrimSpace(record[2]),
+			InsertedAt:          time.Now(),
+			UpdatedAt:           time.Now(),
+		}
+		transactions = append(transactions, t)
+	}
+
+	return transactions, nil
+}
+
+func detectType(amount int32) string {
+	switch {
+	case amount < 0:
+		return "Debit"
+	case amount > 0:
+		return "Credit"
+	default:
+		return "-" // shouldn't have zero amounts
+	}
 }

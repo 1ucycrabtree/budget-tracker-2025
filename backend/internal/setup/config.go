@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"regexp"
 
 	"github.com/joho/godotenv"
 )
@@ -13,6 +14,7 @@ type AppConfig struct {
 	LocalCredentialsPath string
 	CorsAllowedOrigins   []string
 	Environment          string
+	VercelPreviewRegex   *regexp.Regexp
 }
 
 func LoadConfig() *AppConfig {
@@ -21,11 +23,14 @@ func LoadConfig() *AppConfig {
 		fmt.Println("No .env file found, using environment variables")
 	}
 
+	vercelPattern := `^https://budget-tracker-2025-.*-lc2353s-projects\.vercel\.app$`
+
 	cfg := &AppConfig{
 		ProjectID:            getEnv("GCP_PROJECT_ID", ""),
 		LocalCredentialsPath: getEnv("LOCAL_CREDENTIAL_PATH", ""),
 		CorsAllowedOrigins:   parseCSVEnv("CORS_ALLOWED_ORIGINS", "http://localhost:8080,http://localhost:5173"),
 		Environment:          getEnv("ENVIRONMENT", "development"),
+		VercelPreviewRegex:   regexp.MustCompile(vercelPattern),
 	}
 
 	if cfg.ProjectID == "" {

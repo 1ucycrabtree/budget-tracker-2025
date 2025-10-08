@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import TransactionRow from './TransactionRow';
 import type { Transaction } from '../models/transaction';
 import { updateTransaction } from '../api/transactions';
+import { getCategories, addCategory } from '../api/categories';
 
 interface Props {
   transactions: Transaction[];
@@ -21,6 +22,10 @@ export const TransactionList: React.FC<Props> = ({
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [transactionToEdit, setTransactionToEdit] = useState<Transaction | null>(null);
 
+  const [categories, setCategories] = useState<string[]>([]);
+  const [newCategory, setNewCategory] = useState('');
+  const [isAddingCategory, setIsAddingCategory] = useState(false);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -32,6 +37,18 @@ export const TransactionList: React.FC<Props> = ({
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
+  }, []);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const fetchedCategories = await getCategories();
+        setCategories(fetchedCategories);
+      } catch (err) {
+        console.error('Failed to fetch categories:', err);
+      }
+    };
+    fetchCategories();
   }, []);
 
   const handleMenuToggle = (id: string) => {
@@ -47,10 +64,25 @@ export const TransactionList: React.FC<Props> = ({
     setIsEditModalOpen(true);
   };
 
+  const handleAddCategory = async () => {
+    if (!newCategory.trim()) return;
+    setIsAddingCategory(true);
+    try {
+      setCategories((prev) => [...prev, newCategory]); // Optimistic update
+      await addCategory(newCategory);
+      setNewCategory('');
+    } catch (err) {
+      console.error('Failed to add category:', err);
+      setCategories((prev) => prev.filter((cat) => cat !== newCategory)); // Rollback on failure
+    } finally {
+      setIsAddingCategory(false);
+    }
+  };
+
   const handleEditSubmit = async () => {
     if (!transactionToEdit) return;
     try {
-      await updateTransaction(transactionToEdit); // !Make sure to implement or import updateTransaction
+      await updateTransaction(transactionToEdit);
       refreshTransactions();
       setIsEditModalOpen(false);
     } catch (err) {
@@ -102,15 +134,40 @@ export const TransactionList: React.FC<Props> = ({
                 <label htmlFor="category" className="block text-sm font-medium text-gray-700">
                   Category
                 </label>
-                <input
+                <select
                   id="category"
-                  type="text"
                   className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
                   value={transactionToEdit.category}
                   onChange={(e) =>
                     setTransactionToEdit({ ...transactionToEdit, category: e.target.value })
                   }
-                />
+                >
+                  {categories.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                  <option value="">Add New Category</option>
+                </select>
+                {transactionToEdit.category === '' && (
+                  <div className="mt-2">
+                    <input
+                      type="text"
+                      placeholder="New Category"
+                      value={newCategory}
+                      onChange={(e) => setNewCategory(e.target.value)}
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddCategory}
+                      disabled={isAddingCategory}
+                      className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                    >
+                      {isAddingCategory ? 'Adding...' : 'Add Category'}
+                    </button>
+                  </div>
+                )}
               </div>
               <div className="flex justify-end">
                 <button

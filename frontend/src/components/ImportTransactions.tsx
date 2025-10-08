@@ -44,7 +44,7 @@ const ImportTransactions: React.FC<ImportTransactionsProps> = ({ onImportComplet
         type="button"
         onClick={handleButtonClick}
         disabled={isImporting}
-        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+        className="w-48 py-1 rounded-full bg-gray-700 text-white hover:bg-gray-800 transition disabled:opacity-50"
       >
         {isImporting ? 'Importing...' : 'Import Transactions'}
       </button>

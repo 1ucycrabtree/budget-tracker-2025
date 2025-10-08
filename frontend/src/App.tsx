@@ -13,10 +13,9 @@ function AppContent() {
   return (
     <div className="px-4 py-4">
       <h1 className="font-extrabold uppercase mb-4 text-center text-3xl">Budget Tracker</h1>
-
       <AuthPage />
 
-      {user && <Transactions userId={user.uid} />}
+      {user && <Transactions />}
     </div>
   );
 }

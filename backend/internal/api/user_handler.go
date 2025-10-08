@@ -7,6 +7,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+
+	"cloud.google.com/go/firestore"
 )
 
 type SetupUserProfileRequest struct {
@@ -33,6 +35,20 @@ func (deps *SetupUserProfileDeps) SetupUserProfileHandler(w http.ResponseWriter,
 
 	log.Printf("Setting up profile for user: %s", req.Email)
 
+	ctx := context.Background()
+
+	userData := map[string]any{
+		"email":     req.Email,
+		"createdAt": firestore.ServerTimestamp,
+	}
+	err := deps.Repo.SeedNewUser(ctx, req.UID, userData)
+	if err != nil {
+		log.Printf("Failed to create user document for user %s: %v", req.UID, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Failed to create user profile"))
+		return
+	}
+
 	// Seed default categories
 	defaultCategories := []models.UserCategory{
 		{Name: "Groceries", Keywords: []string{"food", "supermarket", "grocery"}},
@@ -45,7 +61,6 @@ func (deps *SetupUserProfileDeps) SetupUserProfileHandler(w http.ResponseWriter,
 		{Name: "Other", Keywords: []string{}},
 	}
 
-	ctx := context.Background()
 	for _, cat := range defaultCategories {
 		_, err := deps.Repo.AddUserCategory(ctx, req.UID, cat)
 		if err != nil {

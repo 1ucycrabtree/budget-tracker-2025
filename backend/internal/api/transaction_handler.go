@@ -38,7 +38,7 @@ import (
 func (deps *RouterDeps) CreateTransactionHandler(w http.ResponseWriter, r *http.Request) {
 	var transaction models.Transaction
 	if err := json.NewDecoder(r.Body).Decode(&transaction); err != nil {
-		http.Error(w, fmt.Sprintf("Invalid request body: %v", err), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf(exceptions.InvalidRequestBodyMessage, err), http.StatusBadRequest)
 		return
 	}
 
@@ -50,7 +50,7 @@ func (deps *RouterDeps) CreateTransactionHandler(w http.ResponseWriter, r *http.
 
 	category, err := categoriser.CategoriseTransaction(r.Context(), deps.Repo, userID, transaction.Description, transaction.Category)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to categorise transaction: %v", err), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf(exceptions.FailedToCategoriseMessage, err), http.StatusInternalServerError)
 		return
 	}
 	transaction.Category = category
@@ -58,7 +58,7 @@ func (deps *RouterDeps) CreateTransactionHandler(w http.ResponseWriter, r *http.
 	transactionID, err := deps.Repo.AddTransaction(context.Background(), userID, transaction)
 	if err != nil {
 		log.Printf("Error adding transaction to DB: %v", err)
-		http.Error(w, "Failed to create transaction", http.StatusInternalServerError)
+		http.Error(w, exceptions.FailedToCreateTransactionMessage, http.StatusInternalServerError)
 		return
 	}
 
@@ -85,7 +85,7 @@ func (deps *RouterDeps) GetTransactionByIDHandler(w http.ResponseWriter, r *http
 	vars := mux.Vars(r)
 	transactionID := vars["id"]
 	if transactionID == "" {
-		http.Error(w, "Missing transaction ID", http.StatusBadRequest)
+		http.Error(w, exceptions.MissingTransactionIDMessage, http.StatusBadRequest)
 		return
 	}
 
@@ -102,11 +102,11 @@ func (deps *RouterDeps) GetTransactionByIDHandler(w http.ResponseWriter, r *http
 		var notFoundErr *exceptions.TransactionNotFoundError
 		if errors.As(err, &notFoundErr) {
 			log.Print(exceptions.TransactionNotFound(transactionID))
-			http.Error(w, "Transaction not found", http.StatusNotFound)
+			http.Error(w, exceptions.TransactionNotFoundMessage, http.StatusNotFound)
 			return
 		}
 		log.Printf("Error getting transaction: %v", err)
-		http.Error(w, "Transaction not found", http.StatusNotFound)
+		http.Error(w, exceptions.TransactionNotFoundMessage, http.StatusNotFound)
 		return
 	}
 
@@ -138,7 +138,7 @@ func (deps *RouterDeps) ListTransactionsHandler(w http.ResponseWriter, r *http.R
 	transactions, err := deps.Repo.ListTransactions(context.Background(), userID, filters)
 	if err != nil {
 		log.Printf("Error listing transactions: %v", err)
-		http.Error(w, "Failed to list transactions", http.StatusInternalServerError)
+		http.Error(w, exceptions.FailedToListTransactionsMessage, http.StatusInternalServerError)
 		return
 	}
 
@@ -162,7 +162,7 @@ func (deps *RouterDeps) ListTransactionsHandler(w http.ResponseWriter, r *http.R
 func (deps *RouterDeps) BulkAddTransactionsHandler(w http.ResponseWriter, r *http.Request) {
 	var transactions []models.Transaction
 	if err := json.NewDecoder(r.Body).Decode(&transactions); err != nil {
-		http.Error(w, fmt.Sprintf("Invalid request body: %v", err), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf(exceptions.InvalidRequestBodyMessage, err), http.StatusBadRequest)
 		return
 	}
 
@@ -177,7 +177,7 @@ func (deps *RouterDeps) BulkAddTransactionsHandler(w http.ResponseWriter, r *htt
 	transactions, err := deps.Repo.BulkAddTransactions(context.Background(), userID, transactions)
 	if err != nil {
 		log.Printf("Error bulk adding transactions: %v", err)
-		http.Error(w, "Failed to bulk add transactions", http.StatusInternalServerError)
+		http.Error(w, exceptions.FailedToBulkAddTransactionsMessage, http.StatusInternalServerError)
 		return
 	}
 
@@ -205,7 +205,7 @@ func (deps *RouterDeps) UpdateTransactionHandler(w http.ResponseWriter, r *http.
 	vars := mux.Vars(r)
 	transactionID := vars["id"]
 	if transactionID == "" {
-		http.Error(w, "Missing transaction ID", http.StatusBadRequest)
+		http.Error(w, exceptions.MissingTransactionIDMessage, http.StatusBadRequest)
 		return
 	}
 
@@ -213,7 +213,7 @@ func (deps *RouterDeps) UpdateTransactionHandler(w http.ResponseWriter, r *http.
 
 	var updateData models.TransactionUpdate
 	if err := json.NewDecoder(r.Body).Decode(&updateData); err != nil {
-		http.Error(w, fmt.Sprintf("Invalid request body: %v", err), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf(exceptions.InvalidRequestBodyMessage, err), http.StatusBadRequest)
 		return
 	}
 
@@ -228,11 +228,11 @@ func (deps *RouterDeps) UpdateTransactionHandler(w http.ResponseWriter, r *http.
 		var notFoundErr *exceptions.TransactionNotFoundError
 		if errors.As(err, &notFoundErr) {
 			log.Print(exceptions.TransactionNotFound(transactionID))
-			http.Error(w, "transaction not found", http.StatusNotFound)
+			http.Error(w, exceptions.TransactionNotFoundMessage, http.StatusNotFound)
 			return
 		}
 		log.Printf("Error updating transaction: %v", err)
-		http.Error(w, "Failed to update transaction", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf(exceptions.FailedToUpdateTransactionMessage, transaction.ID), http.StatusInternalServerError)
 		return
 	}
 
@@ -258,7 +258,7 @@ func (deps *RouterDeps) DeleteTransactionHandler(w http.ResponseWriter, r *http.
 	vars := mux.Vars(r)
 	transactionID := vars["id"]
 	if transactionID == "" {
-		http.Error(w, "Missing transaction ID", http.StatusBadRequest)
+		http.Error(w, exceptions.MissingTransactionIDMessage, http.StatusBadRequest)
 		return
 	}
 
@@ -274,11 +274,11 @@ func (deps *RouterDeps) DeleteTransactionHandler(w http.ResponseWriter, r *http.
 		var notFoundErr *exceptions.TransactionNotFoundError
 		if errors.As(err, &notFoundErr) {
 			log.Print(exceptions.TransactionNotFound(transactionID))
-			http.Error(w, "transaction not found", http.StatusNotFound)
+			http.Error(w, exceptions.TransactionNotFoundMessage, http.StatusNotFound)
 			return
 		}
 		log.Printf("Error deleting transaction: %v", err)
-		http.Error(w, "Failed to delete transaction", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf(exceptions.FailedToDeleteTransactionMessage, transactionID), http.StatusInternalServerError)
 		return
 	}
 
@@ -302,7 +302,7 @@ func (deps *RouterDeps) DeleteTransactionHandler(w http.ResponseWriter, r *http.
 func (deps *RouterDeps) ImportTransactionsHandler(w http.ResponseWriter, r *http.Request) {
 	file, _, err := r.FormFile("file")
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to read file: %v", err), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf(exceptions.FailedToReadMessage, err), http.StatusBadRequest)
 		return
 	}
 	defer file.Close()
@@ -311,13 +311,13 @@ func (deps *RouterDeps) ImportTransactionsHandler(w http.ResponseWriter, r *http
 
 	transactions, err := ParseCSV(r.Context(), deps.Repo, file, userID)
 	if err != nil {
-		http.Error(w, "Failed to parse csv", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf(exceptions.FailedToReadMessage, err), http.StatusInternalServerError)
 		return
 	}
 
 	transactions, err = deps.Repo.BulkAddTransactions(context.Background(), userID, transactions)
 	if err != nil {
-		http.Error(w, "Failed to save transactions", http.StatusInternalServerError)
+		http.Error(w, exceptions.FailedToBulkAddTransactionsMessage, http.StatusInternalServerError)
 		return
 	}
 

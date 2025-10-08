@@ -30,11 +30,11 @@ func (r *FirestoreRepository) GetTransactionByID(ctx context.Context, userID, tr
 		if status.Code(err) == codes.NotFound {
 			return nil, exceptions.TransactionNotFound(transactionID)
 		}
-		return nil, fmt.Errorf("failed to get transaction: %w", err)
+		return nil, fmt.Errorf(exceptions.FailedToGetTransactionMessage, err)
 	}
 	var transaction models.Transaction
 	if err := doc.DataTo(&transaction); err != nil {
-		return nil, fmt.Errorf("failed to convert document data to transaction: %w", err)
+		return nil, fmt.Errorf(exceptions.FailedToParseMessage, err)
 	}
 	if transaction.UserID != userID {
 		return nil, exceptions.UserForbidden(userID)
@@ -66,12 +66,12 @@ func (r *FirestoreRepository) ListTransactions(ctx context.Context, userID strin
 			if status.Code(err) == codes.NotFound {
 				return transactions, nil
 			}
-			return nil, fmt.Errorf("failed to list transactions: %w", err)
+			return nil, fmt.Errorf(exceptions.FailedToListTransactionsMessage)
 		}
 
 		var transaction models.Transaction
 		if err := doc.DataTo(&transaction); err != nil {
-			return nil, fmt.Errorf("failed to convert document data to transaction: %w", err)
+			return nil, fmt.Errorf(exceptions.FailedToParseMessage, err)
 		}
 		transaction.ID = doc.Ref.ID
 		transaction.UserID = ""
@@ -88,7 +88,7 @@ func (r *FirestoreRepository) BulkAddTransactions(ctx context.Context, userID st
 		docRef := r.client.Collection("users").Doc(transaction.UserID).Collection("transactions").NewDoc()
 		_, err := docRef.Set(ctx, transaction)
 		if err != nil {
-			return nil, fmt.Errorf("failed to add transaction: %w", err)
+			return nil, fmt.Errorf(exceptions.FailedToCreateTransactionMessage)
 		}
 		transaction.ID = docRef.ID
 		transaction.UserID = ""
@@ -103,12 +103,12 @@ func (r *FirestoreRepository) UpdateTransaction(ctx context.Context, userID, tra
 		if status.Code(err) == codes.NotFound {
 			return nil, exceptions.TransactionNotFound(transactionID)
 		}
-		return nil, fmt.Errorf("failed to get transaction: %w", err)
+		return nil, fmt.Errorf(exceptions.FailedToGetTransactionMessage, err)
 	}
 
 	var transaction models.Transaction
 	if err := doc.DataTo(&transaction); err != nil {
-		return nil, fmt.Errorf("failed to convert document data to transaction: %w", err)
+		return nil, fmt.Errorf(exceptions.FailedToParseMessage, err)
 	}
 
 	if transaction.UserID != userID {
@@ -120,15 +120,15 @@ func (r *FirestoreRepository) UpdateTransaction(ctx context.Context, userID, tra
 
 	_, err = docRef.Set(ctx, updateMap, firestore.MergeAll)
 	if err != nil {
-		return nil, fmt.Errorf("failed to update transaction: %w", err)
+		return nil, fmt.Errorf(exceptions.FailedToUpdateTransactionMessage, err)
 	}
 
 	doc, err = docRef.Get(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch updated transaction: %w", err)
+		return nil, fmt.Errorf(exceptions.FailedToGetTransactionMessage, err)
 	}
 	if err := doc.DataTo(&transaction); err != nil {
-		return nil, fmt.Errorf("failed to convert updated document data to transaction: %w", err)
+		return nil, fmt.Errorf(exceptions.FailedToParseMessage, err)
 	}
 
 	transaction.ID = doc.Ref.ID
@@ -143,12 +143,12 @@ func (r *FirestoreRepository) DeleteTransaction(ctx context.Context, userID, tra
 		if status.Code(err) == codes.NotFound {
 			return exceptions.TransactionNotFound(transactionID)
 		}
-		return fmt.Errorf("failed to get transaction: %w", err)
+		return fmt.Errorf(exceptions.FailedToGetTransactionMessage, err)
 	}
 
 	var transaction models.Transaction
 	if err := doc.DataTo(&transaction); err != nil {
-		return fmt.Errorf("failed to convert document data to transaction: %w", err)
+		return fmt.Errorf(exceptions.FailedToParseMessage, err)
 	}
 
 	if transaction.UserID != userID {
@@ -157,7 +157,7 @@ func (r *FirestoreRepository) DeleteTransaction(ctx context.Context, userID, tra
 
 	_, err = docRef.Delete(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to delete transaction: %w", err)
+		return fmt.Errorf(exceptions.FailedToDeleteTransactionMessage, err)
 	}
 	return nil
 }

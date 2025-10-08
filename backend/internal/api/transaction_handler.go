@@ -111,7 +111,6 @@ func (deps *RouterDeps) GetTransactionByIDHandler(w http.ResponseWriter, r *http
 	}
 
 	EncodeJSONResponse(w, transaction)
-
 }
 
 // ListTransactionsHandler godoc
@@ -175,7 +174,7 @@ func (deps *RouterDeps) BulkAddTransactionsHandler(w http.ResponseWriter, r *htt
 		transactions[i].UpdatedAt = time.Now()
 	}
 
-	transactions, err := deps.Repo.BulkAddTransactions(context.Background(), transactions)
+	transactions, err := deps.Repo.BulkAddTransactions(context.Background(), userID, transactions)
 	if err != nil {
 		log.Printf("Error bulk adding transactions: %v", err)
 		http.Error(w, "Failed to bulk add transactions", http.StatusInternalServerError)
@@ -316,7 +315,7 @@ func (deps *RouterDeps) ImportTransactionsHandler(w http.ResponseWriter, r *http
 		return
 	}
 
-	transactions, err = deps.Repo.BulkAddTransactions(context.Background(), transactions)
+	transactions, err = deps.Repo.BulkAddTransactions(context.Background(), userID, transactions)
 	if err != nil {
 		http.Error(w, "Failed to save transactions", http.StatusInternalServerError)
 		return

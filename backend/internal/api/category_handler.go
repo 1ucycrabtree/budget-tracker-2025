@@ -77,7 +77,7 @@ func (deps *RouterDeps) AddCategoryHandler(w http.ResponseWriter, r *http.Reques
 // @Failure 400 {string} string "Missing category ID or invalid request body"
 // @Failure 401 {string} string "Unauthorized"
 // @Failure 500 {string} string "Failed to update category"
-// @Router /categories/{id} [put]
+// @Router /categories/{id} [patch]
 // @Security ApiKeyAuth
 func (deps *RouterDeps) UpdateCategoryHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)

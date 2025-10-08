@@ -22,7 +22,7 @@ export const TransactionList: React.FC<Props> = ({
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [transactionToEdit, setTransactionToEdit] = useState<Transaction | null>(null);
 
-  const [categories, setCategories] = useState<string[]>([]);
+  const [categories, setCategories] = useState<{ name: string }[]>([]);
   const [newCategory, setNewCategory] = useState('');
   const [isAddingCategory, setIsAddingCategory] = useState(false);
 
@@ -43,7 +43,22 @@ export const TransactionList: React.FC<Props> = ({
     const fetchCategories = async () => {
       try {
         const fetchedCategories = await getCategories();
-        setCategories(fetchedCategories);
+        if (!Array.isArray(fetchedCategories)) {
+          console.error('Fetched categories are not an array:', fetchedCategories);
+          return;
+        }
+
+        const validCategories = fetchedCategories.map((cat) => {
+          if (typeof cat === 'string') {
+            return { name: cat };
+          } else if (cat && typeof cat === 'object' && 'name' in cat) {
+            return cat;
+          } else {
+            console.warn('Invalid category format:', cat);
+            return { name: JSON.stringify(cat) };
+          }
+        });
+        setCategories(validCategories);
       } catch (err) {
         console.error('Failed to fetch categories:', err);
       }
@@ -60,20 +75,29 @@ export const TransactionList: React.FC<Props> = ({
   };
 
   const handleEdit = (transaction: Transaction) => {
-    setTransactionToEdit(transaction);
+    const category = typeof transaction.category === 'string' ? transaction.category : '';
+    setTransactionToEdit({ ...transaction, category });
     setIsEditModalOpen(true);
+  };
+
+  const renderCategoryOptions = () => {
+    return categories.map((category, index) => (
+      <option key={`${category.name}-${index}`} value={category.name}>
+        {category.name}
+      </option>
+    ));
   };
 
   const handleAddCategory = async () => {
     if (!newCategory.trim()) return;
     setIsAddingCategory(true);
     try {
-      setCategories((prev) => [...prev, newCategory]); // Optimistic update
+      setCategories((prev) => [...prev, { name: newCategory }]);
       await addCategory(newCategory);
       setNewCategory('');
     } catch (err) {
       console.error('Failed to add category:', err);
-      setCategories((prev) => prev.filter((cat) => cat !== newCategory)); // Rollback on failure
+      setCategories((prev) => prev.filter((cat) => cat.name !== newCategory));
     } finally {
       setIsAddingCategory(false);
     }
@@ -142,11 +166,7 @@ export const TransactionList: React.FC<Props> = ({
                     setTransactionToEdit({ ...transactionToEdit, category: e.target.value })
                   }
                 >
-                  {categories.map((category) => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
-                  ))}
+                  {renderCategoryOptions()}
                   <option value="">Add New Category</option>
                 </select>
                 {transactionToEdit.category === '' && (

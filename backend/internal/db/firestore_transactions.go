@@ -79,19 +79,19 @@ func (r *FirestoreRepository) ListTransactions(ctx context.Context, userID strin
 	}
 }
 
-func (r *FirestoreRepository) BulkAddTransactions(ctx context.Context, transactions []models.Transaction) ([]models.Transaction, error) {
-	var docRefs []*firestore.DocumentRef
+func (r *FirestoreRepository) BulkAddTransactions(ctx context.Context, userID string, transactions []models.Transaction) ([]models.Transaction, error) {
+	if len(transactions) == 0 {
+		return nil, fmt.Errorf("no transactions to add")
+	}
+
 	for _, transaction := range transactions {
 		docRef := r.client.Collection("users").Doc(transaction.UserID).Collection("transactions").NewDoc()
 		_, err := docRef.Set(ctx, transaction)
 		if err != nil {
 			return nil, fmt.Errorf("failed to add transaction: %w", err)
 		}
-		docRefs = append(docRefs, docRef)
-	}
-	for i, docRef := range docRefs {
-		transactions[i].ID = docRef.ID
-		transactions[i].UserID = ""
+		transaction.ID = docRef.ID
+		transaction.UserID = ""
 	}
 	return transactions, nil
 }

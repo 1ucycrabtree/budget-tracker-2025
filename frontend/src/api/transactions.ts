@@ -2,6 +2,7 @@ import type { Transaction } from '../models/transaction';
 import { getAuth } from 'firebase/auth';
 
 export async function getTransactions(): Promise<Transaction[]> {
+  // Comment out mock data when running backend locally
   if (process.env.NODE_ENV === 'development') {
     return [
       {
@@ -116,7 +117,7 @@ export async function updateTransaction(transaction: Transaction): Promise<void>
     if (!user) throw new Error('Not authenticated');
     const idToken = await user.getIdToken();
     const res = await fetch(`/api/transactions/${transaction.id}`, {
-      method: 'PUT',
+      method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${idToken}`,

@@ -3,7 +3,7 @@ module backend
 go 1.24.4
 
 require (
-	cloud.google.com/go/firestore v1.18.0
+	cloud.google.com/go/firestore v1.19.0
 	firebase.google.com/go/v4 v4.18.0
 	github.com/gorilla/mux v1.8.1
 	github.com/joho/godotenv v1.5.1

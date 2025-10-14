@@ -23,6 +23,41 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/analytics/forecast": {
+            "get": {
+                "description": "Returns a spending forecast for the next 30 days based on historical transaction data",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "analytics"
+                ],
+                "summary": "Get spending forecast",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/analytics.DailySpend"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Not enough data to generate a forecast",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve transactions",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/categories": {
             "get": {
                 "security": [
@@ -763,6 +798,18 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "analytics.DailySpend": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "type": "string"
+                },
+                "total": {
+                    "type": "number",
+                    "format": "float64"
+                }
+            }
+        },
         "models.Transaction": {
             "type": "object",
             "properties": {

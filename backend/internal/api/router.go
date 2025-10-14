@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"net/http"
+	"slices"
 	"strings"
 
 	"github.com/gorilla/mux"
@@ -68,6 +69,24 @@ func NewRouter(repo db.Repository, cfg *config.AppConfig) http.Handler {
 		Config: cfg,
 	}
 
+	allowOriginFunc := func(origin string) bool {
+		if slices.Contains(cfg.CorsAllowedOrigins, origin) {
+			return true
+		}
+		if cfg.VercelPreviewRegex.MatchString(origin) {
+			return true
+		}
+		return false
+	}
+
+	c := cors.New(cors.Options{
+		AllowOriginFunc:  allowOriginFunc,
+		AllowedMethods:   []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Content-Type", "Authorization", "user-id"},
+		AllowCredentials: true,
+		Debug:            (cfg.Environment != "production"),
+	})
+
 	r.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
 
 	// Health handler (no user-id required)
@@ -94,6 +113,9 @@ func NewRouter(repo db.Repository, cfg *config.AppConfig) http.Handler {
 	r.Handle("/categories/{id}", FirebaseAuthMiddleware(authClient)(http.HandlerFunc(deps.UpdateCategoryHandler))).Methods("PATCH")
 	r.Handle("/categories/{id}", FirebaseAuthMiddleware(authClient)(http.HandlerFunc(deps.DeleteCategoryHandler))).Methods("DELETE")
 
+	// Analytics handlers (require user-id)
+	r.Handle("/forecast/monthly", RequireUserIDMiddleware(http.HandlerFunc(deps.ForecastMonthlyHandler))).Methods("GET")
+  
 	c := cors.New(cors.Options{
 		AllowedOrigins:   cfg.CorsAllowedOrigins,
 		AllowedMethods:   []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},

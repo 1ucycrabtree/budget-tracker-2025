@@ -1,5 +1,13 @@
 basePath: /
 definitions:
+  analytics.DailySpend:
+    properties:
+      date:
+        type: string
+      total:
+        format: float64
+        type: number
+    type: object
   models.Transaction:
     properties:
       amount:
@@ -58,6 +66,31 @@ info:
   title: Auto Budget Tracker API
   version: "1.0"
 paths:
+  /analytics/forecast:
+    get:
+      description:
+        Returns a spending forecast for the next 30 days based on historical
+        transaction data
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: "#/definitions/analytics.DailySpend"
+            type: array
+        "400":
+          description: Not enough data to generate a forecast
+          schema:
+            type: string
+        "500":
+          description: Failed to retrieve transactions
+          schema:
+            type: string
+      summary: Get spending forecast
+      tags:
+        - analytics
   /categories:
     get:
       description: Get all categories for the authenticated user

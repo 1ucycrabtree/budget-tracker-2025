@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 
 	"backend/internal/models"
 	config "backend/internal/setup"
@@ -42,8 +43,31 @@ func GetForecastFromService(ctx context.Context, body io.Reader) (*ForecastRespo
 
 	targetURL := cfg.ForecastingServiceURL
 
+	// Validate the URL to prevent SSRF attacks
+	parsedURL, err := url.Parse(targetURL)
+	if err != nil {
+		return nil, fmt.Errorf("invalid forecasting service URL: %w", err)
+	}
+
+	// Ensure the URL uses an allowed scheme
+	if cfg.Environment == "development" {
+		// In development, allow http and https
+		if parsedURL.Scheme != "http" && parsedURL.Scheme != "https" {
+			return nil, fmt.Errorf("invalid URL scheme: %s (must be http or https)", parsedURL.Scheme)
+		}
+	} else {
+		// In production, only allow https
+		if parsedURL.Scheme != "https" {
+			return nil, fmt.Errorf("invalid URL scheme: %s (must be https in production)", parsedURL.Scheme)
+		}
+	}
+
+	// Ensure the URL has a valid host
+	if parsedURL.Host == "" {
+		return nil, fmt.Errorf("forecasting service URL must have a valid host")
+	}
+
 	var client *http.Client
-	var err error
 	if cfg.Environment == "development" {
 		client = &http.Client{}
 	} else {

@@ -79,14 +79,6 @@ func NewRouter(repo db.Repository, cfg *config.AppConfig) http.Handler {
 		return false
 	}
 
-	c := cors.New(cors.Options{
-		AllowOriginFunc:  allowOriginFunc,
-		AllowedMethods:   []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Content-Type", "Authorization", "user-id"},
-		AllowCredentials: true,
-		Debug:            (cfg.Environment != "production"),
-	})
-
 	r.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
 
 	// Health handler (no user-id required)
@@ -114,14 +106,14 @@ func NewRouter(repo db.Repository, cfg *config.AppConfig) http.Handler {
 	r.Handle("/categories/{id}", FirebaseAuthMiddleware(authClient)(http.HandlerFunc(deps.DeleteCategoryHandler))).Methods("DELETE")
 
 	// Analytics handlers (require user-id)
-	r.Handle("/forecast/monthly", RequireUserIDMiddleware(http.HandlerFunc(deps.ForecastMonthlyHandler))).Methods("GET")
-  
+	r.Handle("/forecast/monthly", FirebaseAuthMiddleware(authClient)(http.HandlerFunc(deps.ForecastMonthlyHandler))).Methods("GET")
+
 	c := cors.New(cors.Options{
-		AllowedOrigins:   cfg.CorsAllowedOrigins,
+		AllowOriginFunc:  allowOriginFunc,
 		AllowedMethods:   []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Content-Type", "Authorization", HeaderUserID},
 		AllowCredentials: true,
-		Debug:            true,
+		Debug:            (cfg.Environment != "production"),
 	})
 
 	handler := c.Handler(r)

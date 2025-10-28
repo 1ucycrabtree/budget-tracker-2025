@@ -30,19 +30,21 @@ def prepare_monthly_data(history: List[HistoryPoint]) -> pd.DataFrame:
     Returns a DataFrame with 'ds' (month-end date) and 'y' (monthly total).
     """
     df = pd.DataFrame([{"ds": h.date, "y": h.amount} for h in history])
-    df['ds'] = pd.to_datetime(df['ds'])
-    df = df.resample('M', on='ds').sum().reset_index()
+    df["ds"] = pd.to_datetime(df["ds"])
+    df = df.resample("M", on="ds").sum().reset_index()
     return df
 
 
-def forecast_monthly(history: List[HistoryPoint], months_ahead: int) -> ForecastResponse:
+def forecast_monthly(
+    history: List[HistoryPoint], months_ahead: int
+) -> ForecastResponse:
     if not history:
-        today = pd.Timestamp.today().normalize()
-        future_dates = pd.date_range(
-            start=today, periods=months_ahead, freq='ME')
+        future_dates = pd.Timestamp.today().normalize() + pd.DateOffset(
+            months=months_ahead
+        )
         return ForecastResponse(
-            dates=future_dates.strftime('%Y-%m-%d').tolist(),
-            predictions=[0]*months_ahead
+            dates=future_dates.strftime("%Y-%m-%d").tolist(),
+            predictions=[0] * months_ahead,
         )
 
     # aggregate amounts per month
@@ -58,20 +60,18 @@ def forecast_monthly(history: List[HistoryPoint], months_ahead: int) -> Forecast
         yearly_seasonality=yearly,
         weekly_seasonality=False,
         daily_seasonality=False,
-        growth='linear'
+        growth="linear",
     )
     model.fit(df)
 
     # future monthly periods starting from next month
-    last_date = pd.Timestamp.today().normalize()
-    future_dates = pd.date_range(
-        start=last_date, periods=months_ahead, freq='ME')
+    future_dates = pd.Timestamp.today().normalize() + pd.DateOffset(months=months_ahead)
     future_df = pd.DataFrame({"ds": future_dates})
 
     forecast = model.predict(future_df)
 
-    preds = [max(0, y) for y in forecast['yhat'].tolist()]
-    dates = forecast['ds'].dt.strftime('%Y-%m-%d').tolist()
+    preds = [max(0, y) for y in forecast["yhat"].tolist()]
+    dates = forecast["ds"].dt.strftime("%Y-%m-%d").tolist()
 
     return ForecastResponse(dates=dates, predictions=preds)
 

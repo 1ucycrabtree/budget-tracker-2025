@@ -20,7 +20,7 @@ type ForecastRequest struct {
 // @Description Returns a spending forecast for the next 3 months based on historical transaction data
 // @Tags analytics
 // @Produce json
-// @Success 200 {array} analytics.DailySpend
+// @Success 200 {array} analytics.ForecastResponse
 // @Failure 400 {string} string "Not enough data to generate a forecast"
 // @Failure 500 {string} string "Failed to retrieve transactions or get forecast"
 // @Router /forecast/monthly [get]

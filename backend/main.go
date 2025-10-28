@@ -54,7 +54,7 @@ func main() {
 		}
 	}(firestoreClient)
 
-	port := os.Getenv("PORT")
+	port := cfg.Port
 	if port == "" {
 		port = "8080"
 	}

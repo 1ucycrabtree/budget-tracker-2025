@@ -1,12 +1,15 @@
 basePath: /
 definitions:
-  analytics.DailySpend:
+  analytics.ForecastResponse:
     properties:
-      date:
-        type: string
-      total:
-        format: float64
-        type: number
+      dates:
+        items:
+          type: string
+        type: array
+      predictions:
+        items:
+          type: number
+        type: array
     type: object
   models.Transaction:
     properties:
@@ -66,48 +69,23 @@ info:
   title: Auto Budget Tracker API
   version: "1.0"
 paths:
-  /analytics/forecast:
-    get:
-      description:
-        Returns a spending forecast for the next 30 days based on historical
-        transaction data
-      produces:
-        - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: "#/definitions/analytics.DailySpend"
-            type: array
-        "400":
-          description: Not enough data to generate a forecast
-          schema:
-            type: string
-        "500":
-          description: Failed to retrieve transactions
-          schema:
-            type: string
-      summary: Get spending forecast
-      tags:
-        - analytics
   /categories:
     get:
       description: Get all categories for the authenticated user
       parameters:
-        - description: User ID
-          in: header
-          name: user-id
-          required: true
-          type: string
+      - description: User ID
+        in: header
+        name: user-id
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
             items:
-              $ref: "#/definitions/models.UserCategory"
+              $ref: '#/definitions/models.UserCategory'
             type: array
         "401":
           description: Unauthorized
@@ -118,28 +96,28 @@ paths:
           schema:
             type: string
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: List user categories
       tags:
-        - categories
+      - categories
     post:
       consumes:
-        - application/json
+      - application/json
       description: Add a new category for the authenticated user
       parameters:
-        - description: User ID
-          in: header
-          name: user-id
-          required: true
-          type: string
-        - description: Category to add
-          in: body
-          name: category
-          required: true
-          schema:
-            $ref: "#/definitions/models.UserCategory"
+      - description: User ID
+        in: header
+        name: user-id
+        required: true
+        type: string
+      - description: Category to add
+        in: body
+        name: category
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserCategory'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
@@ -160,26 +138,26 @@ paths:
           schema:
             type: string
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: Add a new category
       tags:
-        - categories
+      - categories
   /categories/{id}:
     delete:
       description: Delete a category for the authenticated user
       parameters:
-        - description: User ID
-          in: header
-          name: user-id
-          required: true
-          type: string
-        - description: Category ID
-          in: path
-          name: id
-          required: true
-          type: string
+      - description: User ID
+        in: header
+        name: user-id
+        required: true
+        type: string
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "204":
           description: No Content
@@ -198,33 +176,33 @@ paths:
           schema:
             type: string
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: Delete a category
       tags:
-        - categories
-    put:
+      - categories
+    patch:
       consumes:
-        - application/json
+      - application/json
       description: Update an existing category for the authenticated user
       parameters:
-        - description: User ID
-          in: header
-          name: user-id
-          required: true
-          type: string
-        - description: Category ID
-          in: path
-          name: id
-          required: true
-          type: string
-        - description: Updated category
-          in: body
-          name: category
-          required: true
-          schema:
-            $ref: "#/definitions/models.UserCategory"
+      - description: User ID
+        in: header
+        name: user-id
+        required: true
+        type: string
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated category
+        in: body
+        name: category
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserCategory'
       produces:
-        - application/json
+      - application/json
       responses:
         "204":
           description: No Content
@@ -243,15 +221,39 @@ paths:
           schema:
             type: string
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: Update a category
       tags:
-        - categories
+      - categories
+  /forecast/monthly:
+    get:
+      description: Returns a spending forecast for the next 3 months based on historical
+        transaction data
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/analytics.ForecastResponse'
+            type: array
+        "400":
+          description: Not enough data to generate a forecast
+          schema:
+            type: string
+        "500":
+          description: Failed to retrieve transactions or get forecast
+          schema:
+            type: string
+      summary: Get spending forecast
+      tags:
+      - analytics
   /health:
     get:
       description: Returns the health status of the API
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
@@ -265,70 +267,28 @@ paths:
             type: string
       summary: Health check
       tags:
-        - health
-  /import:
-    post:
-      consumes:
-        - multipart/form-data
-      description: Import transactions for the authenticated user from a CSV file
-      parameters:
-        - description: User ID
-          in: header
-          name: user-id
-          required: true
-          type: string
-        - description: CSV file
-          in: formData
-          name: file
-          required: true
-          type: file
-      produces:
-        - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: "#/definitions/models.Transaction"
-            type: array
-        "400":
-          description: Failed to read file
-          schema:
-            type: string
-        "401":
-          description: Unauthorized
-          schema:
-            type: string
-        "500":
-          description: Failed to parse csv or save transactions
-          schema:
-            type: string
-      security:
-        - ApiKeyAuth: []
-      summary: Import transactions from CSV
-      tags:
-        - import
+      - health
   /transactions:
     get:
       description: List transactions for the authenticated user, optionally filtered
       parameters:
-        - description: User ID
-          in: header
-          name: user-id
-          required: true
-          type: string
-        - description: Filters (key=value)
-          in: query
-          name: filters
-          type: string
+      - description: User ID
+        in: header
+        name: user-id
+        required: true
+        type: string
+      - description: Filters (key=value)
+        in: query
+        name: filters
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
             items:
-              $ref: "#/definitions/models.Transaction"
+              $ref: '#/definitions/models.Transaction'
             type: array
         "401":
           description: Unauthorized
@@ -339,33 +299,33 @@ paths:
           schema:
             type: string
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: List transactions
       tags:
-        - transactions
+      - transactions
     post:
       consumes:
-        - application/json
+      - application/json
       description: Create a new transaction for the authenticated user
       parameters:
-        - description: User ID
-          in: header
-          name: user-id
-          required: true
-          type: string
-        - description: Transaction to create
-          in: body
-          name: transaction
-          required: true
-          schema:
-            $ref: "#/definitions/models.Transaction"
+      - description: User ID
+        in: header
+        name: user-id
+        required: true
+        type: string
+      - description: Transaction to create
+        in: body
+        name: transaction
+        required: true
+        schema:
+          $ref: '#/definitions/models.Transaction'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/models.Transaction"
+            $ref: '#/definitions/models.Transaction'
         "400":
           description: Invalid request body
           schema:
@@ -379,26 +339,26 @@ paths:
           schema:
             type: string
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: Create a transaction
       tags:
-        - transactions
+      - transactions
   /transactions/{id}:
     delete:
       description: Delete a transaction for the authenticated user
       parameters:
-        - description: User ID
-          in: header
-          name: user-id
-          required: true
-          type: string
-        - description: Transaction ID
-          in: path
-          name: id
-          required: true
-          type: string
+      - description: User ID
+        in: header
+        name: user-id
+        required: true
+        type: string
+      - description: Transaction ID
+        in: path
+        name: id
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
@@ -425,30 +385,30 @@ paths:
           schema:
             type: string
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: Delete a transaction
       tags:
-        - transactions
+      - transactions
     get:
       description: Get a transaction by its ID for the authenticated user
       parameters:
-        - description: User ID
-          in: header
-          name: user-id
-          required: true
-          type: string
-        - description: Transaction ID
-          in: path
-          name: id
-          required: true
-          type: string
+      - description: User ID
+        in: header
+        name: user-id
+        required: true
+        type: string
+      - description: Transaction ID
+        in: path
+        name: id
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/models.Transaction"
+            $ref: '#/definitions/models.Transaction'
         "400":
           description: Missing transaction ID
           schema:
@@ -466,38 +426,38 @@ paths:
           schema:
             type: string
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: Get transaction by ID
       tags:
-        - transactions
+      - transactions
     put:
       consumes:
-        - application/json
+      - application/json
       description: Update an existing transaction for the authenticated user
       parameters:
-        - description: User ID
-          in: header
-          name: user-id
-          required: true
-          type: string
-        - description: Transaction ID
-          in: path
-          name: id
-          required: true
-          type: string
-        - description: Transaction update data
-          in: body
-          name: transaction
-          required: true
-          schema:
-            $ref: "#/definitions/models.TransactionUpdate"
+      - description: User ID
+        in: header
+        name: user-id
+        required: true
+        type: string
+      - description: Transaction ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Transaction update data
+        in: body
+        name: transaction
+        required: true
+        schema:
+          $ref: '#/definitions/models.TransactionUpdate'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/models.Transaction"
+            $ref: '#/definitions/models.Transaction'
         "400":
           description: Missing transaction ID or invalid request body
           schema:
@@ -519,37 +479,37 @@ paths:
           schema:
             type: string
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: Update a transaction
       tags:
-        - transactions
+      - transactions
   /transactions/bulk:
     post:
       consumes:
-        - application/json
+      - application/json
       description: Add multiple transactions for the authenticated user
       parameters:
-        - description: User ID
-          in: header
-          name: user-id
-          required: true
-          type: string
-        - description: Transactions to add
-          in: body
-          name: transactions
-          required: true
-          schema:
-            items:
-              $ref: "#/definitions/models.Transaction"
-            type: array
+      - description: User ID
+        in: header
+        name: user-id
+        required: true
+        type: string
+      - description: Transactions to add
+        in: body
+        name: transactions
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/models.Transaction'
+          type: array
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
             items:
-              $ref: "#/definitions/models.Transaction"
+              $ref: '#/definitions/models.Transaction'
             type: array
         "400":
           description: Invalid request body
@@ -564,8 +524,50 @@ paths:
           schema:
             type: string
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: Bulk add transactions
       tags:
-        - transactions
+      - transactions
+  /transactions/import:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Import transactions for the authenticated user from a CSV file
+      parameters:
+      - description: User ID
+        in: header
+        name: user-id
+        required: true
+        type: string
+      - description: CSV file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Transaction'
+            type: array
+        "400":
+          description: Failed to read file
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Failed to parse csv or save transactions
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Import transactions from CSV
+      tags:
+      - import
 swagger: "2.0"

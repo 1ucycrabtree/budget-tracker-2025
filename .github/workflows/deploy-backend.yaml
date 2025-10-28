@@ -87,7 +87,7 @@ jobs:
 
       - name: Allow backend to invoke forecasting service (staging)
         run: |
-          gcloud run services add-iam-policy-binding ${{ env.FORECASTING_SERVICE_ACCOUNT}} \
+          gcloud run services add-iam-policy-binding ${{ env.FORECASTING_SERVICE_ACCOUNT }} \
             --member="serviceAccount:${{ secrets.BACKEND_SERVICE_ACCOUNT }}" \
             --role="roles/run.invoker" \
             --region=${{ env.GCP_REGION }}

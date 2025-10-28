@@ -53,7 +53,7 @@ func GetForecastFromService(ctx context.Context, body io.Reader) (*ForecastRespo
 		}
 	}
 
-	resp, err := client.Post(targetURL+"/forecast/monthly", "application/json", body)
+	resp, err := client.Post(fmt.Sprintf("%s/forecast/monthly", targetURL), "application/json", body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to make authenticated request: %w", err)
 	}

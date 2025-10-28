@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 
 	"backend/internal/models"
+	config "backend/internal/setup"
 
 	"google.golang.org/api/idtoken"
 )
@@ -38,11 +38,13 @@ func PrepareHistory(transactions []models.Transaction) []HistoryPoint {
 }
 
 func GetForecastFromService(ctx context.Context, body io.Reader) (*ForecastResponse, error) {
-	targetURL := os.Getenv("FORECASTING_SERVICE_URL")
+	cfg := config.LoadConfig()
+
+	targetURL := cfg.ForecastingServiceURL
 
 	var client *http.Client
 	var err error
-	if os.Getenv("ENVIRONMENT") == "development" {
+	if cfg.Environment == "development" {
 		client = &http.Client{}
 	} else {
 		client, err = idtoken.NewClient(ctx, targetURL)

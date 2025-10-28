@@ -5,7 +5,7 @@ i am building this to fill in the gaps of my knowledge around full-stack develop
 ![cat poking its head out](catSmiling.jpeg)
 
 ## 🤖 current development
-- staging & prod worfklows fully working and nice (even though its only mean developing and using lol)
+- staging & prod worfklows fully working and nice (even though its only me developing and using lol)
 - python FastAPI forecaster using meta prophet!
 - a nice fancy ui (that i am procrastinating designing)
 

@@ -10,11 +10,13 @@ import (
 )
 
 type AppConfig struct {
-	ProjectID            string
-	LocalCredentialsPath string
-	CorsAllowedOrigins   []string
-	Environment          string
-	VercelPreviewRegex   *regexp.Regexp
+	ProjectID             string
+	LocalCredentialsPath  string
+	CorsAllowedOrigins    []string
+	Environment           string
+	VercelPreviewRegex    *regexp.Regexp
+	Port                  string
+	ForecastingServiceURL string
 }
 
 func LoadConfig() *AppConfig {
@@ -26,11 +28,13 @@ func LoadConfig() *AppConfig {
 	vercelPattern := `^https://budget-tracker-2025-.*-lc2353s-projects\.vercel\.app$`
 
 	cfg := &AppConfig{
-		ProjectID:            getEnv("GCP_PROJECT_ID", ""),
-		LocalCredentialsPath: getEnv("LOCAL_CREDENTIAL_PATH", ""),
-		CorsAllowedOrigins:   parseCSVEnv("CORS_ALLOWED_ORIGINS", "http://localhost:8080,http://localhost:5173"),
-		Environment:          getEnv("ENVIRONMENT", "development"),
-		VercelPreviewRegex:   regexp.MustCompile(vercelPattern),
+		ProjectID:             getEnv("GCP_PROJECT_ID", ""),
+		LocalCredentialsPath:  getEnv("LOCAL_CREDENTIAL_PATH", ""),
+		CorsAllowedOrigins:    parseCSVEnv("CORS_ALLOWED_ORIGINS", "http://localhost:8080,http://localhost:5173"),
+		Environment:           getEnv("ENVIRONMENT", "development"),
+		VercelPreviewRegex:    regexp.MustCompile(vercelPattern),
+		Port:                  getEnv("PORT", "8080"),
+		ForecastingServiceURL: getEnv("FORECASTING_SERVICE_URL", "http://localhost:8090"),
 	}
 
 	if cfg.ProjectID == "" {
